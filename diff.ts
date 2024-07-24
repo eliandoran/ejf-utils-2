@@ -26,9 +26,15 @@ function findCharacterDifferences(firstEjfData: EjfData, secondEjfData: EjfData)
     const secondCharacterSet = new Set<string>(secondEjfData.characterChecksums.keys());
 
     // Highlight removed characters.
-    const removedCharacters = secondCharacterSet.difference(firstCharacterSet);
+    const removedCharacters = firstCharacterSet.difference(secondCharacterSet);
     for (const removedChar of removedCharacters) {
         console.log(`-${removedChar}`);
+    }
+
+    // Highlight added characters.
+    const addedCharacters = secondCharacterSet.difference(firstCharacterSet);
+    for (const addedChar of addedCharacters) {
+        console.log(`+${addedChar}`);
     }
 }
 
