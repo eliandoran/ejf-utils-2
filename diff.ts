@@ -1,7 +1,11 @@
 const [ firstFilePath, secondFilePath ] = Deno.args;
 import { ZipReader } from "jsr:@zip-js/zip-js";
 
-async function readArchive(ejfPath: string) {
+interface EjfData {
+    characterChecksums: Map<string, number>;
+}
+
+async function readArchive(ejfPath: string): Promise<EjfData> {
     const archive = new ZipReader(await Deno.open(ejfPath));
     const entries = await archive.getEntries();
 
@@ -17,7 +21,17 @@ async function readArchive(ejfPath: string) {
     };
 }
 
+function findCharacterDifferences(firstEjfData: EjfData, secondEjfData: EjfData) {    
+    const firstCharacterSet = new Set<string>(firstEjfData.characterChecksums.keys());
+    const secondCharacterSet = new Set<string>(secondEjfData.characterChecksums.keys());
+
+    // Highlight removed characters.
+    const removedCharacters = secondCharacterSet.difference(firstCharacterSet);
+    for (const removedChar of removedCharacters) {
+        console.log(`-${removedChar}`);
+    }
+}
+
 const firstEjfData = await readArchive(firstFilePath);
 const secondEjfData = await readArchive(secondFilePath);
-
-console.log(firstEjfData);
+findCharacterDifferences(firstEjfData, secondEjfData);
