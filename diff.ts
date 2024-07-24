@@ -52,7 +52,7 @@ async function findCharacterDifferences(firstEjfData: EjfData, secondEjfData: Ej
     
     // Highlight changed characters.
     const commonCharacters = firstCharacterSet.intersection(secondCharacterSet);
-    const changedCharacters = (Array.from(commonCharacters)).filter((ch) => firstEjfData.chars.get(ch) !== secondEjfData.chars.get(ch));
+    const changedCharacters = (Array.from(commonCharacters)).filter((ch) => firstEjfData.chars.get(ch)?.checksum !== secondEjfData.chars.get(ch)?.checksum);
     
     for (const changedChar of changedCharacters) {
         const firstCharData = firstEjfData.chars.get(changedChar);
