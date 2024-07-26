@@ -41,13 +41,13 @@ async function findCharacterDifferences(firstEjfData: EjfData, secondEjfData: Ej
     // Highlight removed characters.
     const removedCharacters = firstCharacterSet.difference(secondCharacterSet);
     for (const removedChar of removedCharacters) {
-        console.log(`-${removedChar}`);
+        console.log(`-${removedChar} (${String.fromCharCode(removedChar)})`);
     }
 
     // Highlight added characters.
     const addedCharacters = secondCharacterSet.difference(firstCharacterSet);
     for (const addedChar of addedCharacters) {
-        console.log(`+${addedChar}`);
+        console.log(`+${addedChar} (${String.fromCharCode(addedChar)})`);
     }
     
     // Highlight changed characters.
