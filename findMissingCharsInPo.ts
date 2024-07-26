@@ -9,13 +9,14 @@ interface Message {
 
 function processPoFile(path: string){
     const poFile =  Deno.readTextFileSync(path);
-    const charSet = new Set<string> (poFile);
     const po = getText.po.parse(poFile)
         .translations[""] as Record<string, Message>;
     delete po[""];
     
-    const parsedPo = Object.values(po)
-        .map(el => el.msgstr[0]);
+    const parsedPo = new Set<string>( Object.values(po)
+        .map(el => el.msgstr[0])
+        .join("")
+        .split(""));
 
     console.log(parsedPo)
 }
