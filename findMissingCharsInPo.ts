@@ -63,8 +63,9 @@ async function findCharsDifferences() {
     const ejfData = await readEjfFile(ejfFilePath);
     const ejfFile = new Set<string>(ejfData.chars.keys());
 
-    const missingChars = Array.from(poFile.difference(ejfFile)).toSorted(
-        (a: string, b: string) => parseInt(a, 16) - parseInt(b, 16));
+    const missingChars = Array.from(poFile.difference(ejfFile))
+        .toSorted((a: string, b: string) => parseInt(a, 16) - parseInt(b, 16))
+        .join(",");
 
     console.log(missingChars)
 }
