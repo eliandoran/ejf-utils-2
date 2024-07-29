@@ -16,9 +16,9 @@ const glyph = face.loadChar("A".charCodeAt(0), {
 function monochromeImageBufferToColorImageBuffer(inputBuffer: Uint8Array) {
     const outputBuffer = new Uint8Array(4 * inputBuffer.length);
     for (let i=0; i<inputBuffer.length; i++) {
-        outputBuffer[4 * i] = inputBuffer[i];
-        outputBuffer[4 * i + 1] = inputBuffer[i];
-        outputBuffer[4 * i + 2] = inputBuffer[i];
+        outputBuffer[4 * i] = 255 - inputBuffer[i];
+        outputBuffer[4 * i + 1] = 255 - inputBuffer[i];
+        outputBuffer[4 * i + 2] = 255 - inputBuffer[i];
         outputBuffer[4 * i + 3] = 255;
     }
 
