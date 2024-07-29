@@ -17,32 +17,41 @@ function renderCharacter(char: string) {
 }
 
 function monochromeImageBufferToColorImageBuffer(glyph: freetype.Glyph, inputBuffer: Uint8Array) {
-    const imageWidth = glyph.metrics.width / 64;
+    const leftSpacing = glyph.metrics.horiBearingX / 64;
+    const rightSpacing = (glyph.metrics.horiAdvance - glyph.metrics.horiBearingX - glyph.metrics.width) / 64;    
+
+    const inputImageWidth = (glyph.metrics.width / 64);
+    const imageWidth = leftSpacing + inputImageWidth + rightSpacing;
     const imageHeight = glyph.metrics.height / 64;
+
     const numPixels = (imageWidth * imageHeight * 4);
 
     const outputBuffer = new Uint8Array(numPixels);
-    for (let i=0; i<inputBuffer.length; i++) {
-        outputBuffer[4 * i] = 255 - inputBuffer[i];
-        outputBuffer[4 * i + 1] = 255 - inputBuffer[i];
-        outputBuffer[4 * i + 2] = 255 - inputBuffer[i];
-        outputBuffer[4 * i + 3] = 255;
+
+    for (let y = 0; y < imageHeight; y++) {
+        for (let x = 0; x < inputImageWidth; x++) {
+            const srcPos = (y * inputImageWidth) + x;
+            const destPos = (y * imageWidth) + x;
+            outputBuffer[4 * destPos] = 255 - inputBuffer[srcPos];
+            outputBuffer[4 * destPos + 1] = 255 - inputBuffer[srcPos];
+            outputBuffer[4 * destPos + 2] = 255 - inputBuffer[srcPos];
+            outputBuffer[4 * destPos + 3] = 255;
+        }
     }
 
-    return outputBuffer;
+    return {
+        buffer: outputBuffer,
+        imageWidth,
+        imageHeight
+    };
 }
 
-function buildPng(glyph, colorImageBuffer: Uint8Array) {
-    const numPixels = colorImageBuffer.length / 4;
-    const width = glyph.metrics.width / 64;
-    console.log(glyph.metrics);
-
-    console.log("Image size is ", colorImageBuffer.length);
-    return encode(colorImageBuffer, width, numPixels / width);    
+function buildPng(colorImageBuffer: ReturnType<typeof monochromeImageBufferToColorImageBuffer>) {    
+    return encode(colorImageBuffer.buffer, colorImageBuffer.imageWidth, colorImageBuffer.imageHeight);
 }
 
 const glyph = renderCharacter("A");
 const colorImageBuffer = monochromeImageBufferToColorImageBuffer(glyph, Uint8Array.from(glyph.bitmap?.buffer));
-const png = buildPng(glyph, colorImageBuffer);
+const png = buildPng(colorImageBuffer);
 
 Deno.writeFileSync("glyph.png", png);
