@@ -23,17 +23,10 @@ export default class Renderer {
     }
 
     render(char: string) {
-        const glyph = this.renderCharacter(char);
-        return this.monochromeImageBufferToColorImageBuffer(glyph, Uint8Array.from(glyph.bitmap?.buffer));
-    }
-
-    renderCharacter(char: string) {
-        return this.face.loadChar(char.charCodeAt(0), {
+        const glyph = this.face.loadChar(char.charCodeAt(0), {
             render: true
-        });
-    }
-    
-    monochromeImageBufferToColorImageBuffer(glyph: freetype.Glyph, inputBuffer: Uint8Array) {
+        });        
+
         const leftSpacing = glyph.metrics.horiBearingX / 64;
         const rightSpacing = (glyph.metrics.horiAdvance - glyph.metrics.horiBearingX - glyph.metrics.width) / 64;    
     
@@ -43,6 +36,7 @@ export default class Renderer {
     
         const numPixels = (imageWidth * this.totalHeight * 4);
     
+        const inputBuffer = Uint8Array.from(glyph.bitmap?.buffer);
         const outputBuffer = new Uint8Array(numPixels).fill(255);
         const yOffset = Math.floor(this.ascender - (glyph.bitmapTop || 0));
     
