@@ -31,7 +31,7 @@ function monochromeImageBufferToColorImageBuffer(glyph: freetype.Glyph, inputBuf
     for (let y = 0; y < imageHeight; y++) {
         for (let x = 0; x < inputImageWidth; x++) {
             const srcPos = (y * inputImageWidth) + x;
-            const destPos = (y * imageWidth) + x;
+            const destPos = leftSpacing + (y * imageWidth) + x;
             outputBuffer[4 * destPos] = 255 - inputBuffer[srcPos];
             outputBuffer[4 * destPos + 1] = 255 - inputBuffer[srcPos];
             outputBuffer[4 * destPos + 2] = 255 - inputBuffer[srcPos];
