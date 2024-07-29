@@ -4,14 +4,17 @@ import freetype from "npm:freetype2";
 const ttfPath = Deno.args[0];
 
 const DPI = 72;
-const size = 32;
+const size = 40;
 
 const face = freetype.NewFace(ttfPath);
-face.setCharSize(size, 0, DPI, 0)
+const charWidth = size;
+face.setCharSize(charWidth, 0, DPI, 0);
 
-const glyph = face.loadChar("A".charCodeAt(0), {
-    render: true
-});
+function renderCharacter(char: string) {
+    return face.loadChar(char.charCodeAt(0), {
+        render: true
+    });
+}
 
 function monochromeImageBufferToColorImageBuffer(inputBuffer: Uint8Array) {
     const outputBuffer = new Uint8Array(4 * inputBuffer.length);
@@ -25,15 +28,17 @@ function monochromeImageBufferToColorImageBuffer(inputBuffer: Uint8Array) {
     return outputBuffer;
 }
 
-function buildPng(colorImageBuffer: Uint8Array) {
-    const width = 23;
+function buildPng(glyph, colorImageBuffer: Uint8Array) {
     const numPixels = colorImageBuffer.length / 4;
+    const width = glyph.metrics.width / 64;
+    console.log(glyph.metrics);
 
     console.log("Image size is ", colorImageBuffer.length);
     return encode(colorImageBuffer, width, numPixels / width);    
 }
 
+const glyph = renderCharacter("A");
 const colorImageBuffer = monochromeImageBufferToColorImageBuffer(Uint8Array.from(glyph.bitmap?.buffer));
-const png = buildPng(colorImageBuffer);
+const png = buildPng(glyph, colorImageBuffer);
 
 Deno.writeFileSync("glyph.png", png);
