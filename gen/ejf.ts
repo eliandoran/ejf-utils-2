@@ -25,6 +25,7 @@ export default async function buildEjf(config: EjfConfig) {
         
         const reader = new Uint8ArrayReader(renderedChar);        
         await writer.add(charFileName, reader);
+        await writer.add(`design_${charFileName}`, reader);
     }
     console.timeEnd("render-zip");
 
