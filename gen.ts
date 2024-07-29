@@ -26,7 +26,7 @@ function monochromeImageBufferToColorImageBuffer(glyph: freetype.Glyph, inputBuf
 
     const numPixels = (imageWidth * imageHeight * 4);
 
-    const outputBuffer = new Uint8Array(numPixels);
+    const outputBuffer = new Uint8Array(numPixels).fill(255);
 
     for (let y = 0; y < imageHeight; y++) {
         for (let x = 0; x < inputImageWidth; x++) {
