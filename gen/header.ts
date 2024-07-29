@@ -4,7 +4,8 @@ interface HeaderInfo {
     baseline: number;
     height: number;
     name: string,
-    spaceWidth: number
+    spaceWidth: number,
+    characters: number[]
 }
 
 export default function buildHeader(info: HeaderInfo) {
@@ -25,10 +26,16 @@ export default function buildHeader(info: HeaderInfo) {
                 "@Space": info.spaceWidth,
                 "@Style": "p",
                 "@Width": "-1",
-                "Identifier": { "@Value": "34" }
+                Identifier: { "@Value": "34" }
             },
             FontCharacterProperties: {
-                
+                Character: info.characters.map((ch) => {
+                    return {
+                        "@Index": `0x${ch.toString(16)}`,
+                        "@LeftSpace": 0,
+                        "@RightSpace": 0
+                    };
+                })
             }
         }
     };
