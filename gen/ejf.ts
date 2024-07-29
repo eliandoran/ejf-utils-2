@@ -1,8 +1,8 @@
-import { BlobWriter, TextReader, TextWriter, Uint8ArrayReader, ZipWriter } from "jsr:@zip-js/zip-js";
+import { BlobWriter, TextReader, Uint8ArrayReader, ZipWriter } from "jsr:@zip-js/zip-js";
 import parseCharRange from "./char_range.ts";
 import Renderer from "./renderer.ts";
 import buildHeader from "./header.ts";
-import { basename, extname } from "jsr:@std/path@0.224.0";
+import { basename, extname } from "jsr:@std/path@^1.0.0";
 
 interface EjfConfig {
     ttfPath: string;
