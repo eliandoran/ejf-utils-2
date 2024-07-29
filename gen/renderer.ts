@@ -22,8 +22,8 @@ export default class Renderer {
         this.totalHeight = Math.floor(this.ascender + descender)
     }
 
-    render(char: string) {
-        const glyph = this.face.loadChar(char.charCodeAt(0), {
+    render(charCode: number) {
+        const glyph = this.face.loadChar(charCode, {
             render: true
         });        
 
