@@ -3,6 +3,7 @@ import { printImage } from "https://deno.land/x/terminal_images@3.1.0/mod.ts";
 import { BlobWriter, TextWriter } from "jsr:@zip-js/zip-js";
 import { Entry } from "jsr:@zip-js/zip-js";
 import { ZipReader } from "jsr:@zip-js/zip-js";
+import { diff } from "jsr:@libs/diff";
 
 export const DISPLAY_PREVIEWS = false;
 interface CharData {
@@ -27,7 +28,7 @@ async function readArchive(ejfPath: string) {
 
             header = {
                 checksum: entry.signature,
-                data: await writer.getData()
+                data: preprocessHeader(await writer.getData())
             };            
             continue;
         }
@@ -56,13 +57,18 @@ async function readArchive(ejfPath: string) {
 
 type EjfData = Awaited<ReturnType<typeof readArchive>>;
 
+function preprocessHeader(ejfHeader: string) {
+    return ejfHeader.replace(/\/></g, "/>\n<");
+}
+
 function analyzeHeader(firstEjfData: EjfData, secondEjfData: EjfData) {
+    const headerDiff = diff(firstEjfData.header.data, secondEjfData.header.data);
     if (firstEjfData.header.data === secondEjfData.header.data) {
         console.log("EJF headers are identical.");
         return;
     }
 
-    console.log("EJF header contains differences.");
+    console.log("EJF header contains differences:\n", headerDiff);
 }
 
 async function findCharacterDifferences(firstEjfData: EjfData, secondEjfData: EjfData) {    
