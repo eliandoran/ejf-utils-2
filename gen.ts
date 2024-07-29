@@ -16,8 +16,12 @@ function renderCharacter(char: string) {
     });
 }
 
-function monochromeImageBufferToColorImageBuffer(inputBuffer: Uint8Array) {
-    const outputBuffer = new Uint8Array(4 * inputBuffer.length);
+function monochromeImageBufferToColorImageBuffer(glyph: freetype.Glyph, inputBuffer: Uint8Array) {
+    const imageWidth = glyph.metrics.width / 64;
+    const imageHeight = glyph.metrics.height / 64;
+    const numPixels = (imageWidth * imageHeight * 4);
+
+    const outputBuffer = new Uint8Array(numPixels);
     for (let i=0; i<inputBuffer.length; i++) {
         outputBuffer[4 * i] = 255 - inputBuffer[i];
         outputBuffer[4 * i + 1] = 255 - inputBuffer[i];
@@ -38,7 +42,7 @@ function buildPng(glyph, colorImageBuffer: Uint8Array) {
 }
 
 const glyph = renderCharacter("A");
-const colorImageBuffer = monochromeImageBufferToColorImageBuffer(Uint8Array.from(glyph.bitmap?.buffer));
+const colorImageBuffer = monochromeImageBufferToColorImageBuffer(glyph, Uint8Array.from(glyph.bitmap?.buffer));
 const png = buildPng(glyph, colorImageBuffer);
 
 Deno.writeFileSync("glyph.png", png);
