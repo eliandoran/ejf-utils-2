@@ -5,13 +5,21 @@ const DPI = 72;
 
 export default class Renderer {
 
-    face: freetype.FontFace;
+    private face: freetype.FontFace;
+    private ascender: number;
+    private totalHeight: number;
 
     constructor(ttfPath: string, size: number) {
         const face = freetype.NewFace(ttfPath);
         const charWidth = size;
         face.setCharSize(charWidth, 0, DPI, 0);
         this.face = face;
+
+        const properties = this.face.properties();
+        const yScale = properties.size.yScale / 65536;
+        this.ascender = Math.floor(properties.ascender * yScale) / 64;
+        const descender = -Math.floor(properties.descender * yScale) / 64;    
+        this.totalHeight = Math.floor(this.ascender + descender)
     }
 
     render(char: string) {
@@ -26,17 +34,6 @@ export default class Renderer {
         });
     }
     
-    calculateFontHeight() {
-        const properties = this.face.properties();
-        const yScale = properties.size.yScale / 65536;
-        const ascender = Math.floor(properties.ascender * yScale) / 64;
-        const descender = -Math.floor(properties.descender * yScale) / 64;    
-        return {
-            ascender: ascender,
-            totalHeight: Math.floor(ascender + descender)
-        };
-    }
-    
     monochromeImageBufferToColorImageBuffer(glyph: freetype.Glyph, inputBuffer: Uint8Array) {
         const leftSpacing = glyph.metrics.horiBearingX / 64;
         const rightSpacing = (glyph.metrics.horiAdvance - glyph.metrics.horiBearingX - glyph.metrics.width) / 64;    
@@ -44,12 +41,11 @@ export default class Renderer {
         const inputImageWidth = (glyph.metrics.width / 64);
         const imageWidth = leftSpacing + inputImageWidth + rightSpacing;
         const glyphHeight = glyph.metrics.height / 64;
-        const { ascender, totalHeight } = this.calculateFontHeight();
     
-        const numPixels = (imageWidth * totalHeight * 4);
+        const numPixels = (imageWidth * this.totalHeight * 4);
     
         const outputBuffer = new Uint8Array(numPixels).fill(255);
-        const yOffset = Math.floor(ascender - (glyph.bitmapTop || 0));
+        const yOffset = Math.floor(this.ascender - (glyph.bitmapTop || 0));
     
         for (let y = 0; y < glyphHeight; y++) {
             for (let x = 0; x < inputImageWidth; x++) {
@@ -65,7 +61,7 @@ export default class Renderer {
         return {
             buffer: outputBuffer,
             imageWidth,
-            imageHeight: totalHeight
+            imageHeight: this.totalHeight
         };
     }
     
