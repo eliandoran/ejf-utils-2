@@ -20,8 +20,11 @@ function calculateFontHeight() {
     const properties = face.properties();
     const yScale = properties.size.yScale / 65536;
     const ascender = Math.floor(properties.ascender * yScale) / 64;
-    const descender = -Math.floor(properties.descender * yScale) / 64;
-    return Math.floor(ascender + descender);
+    const descender = -Math.floor(properties.descender * yScale) / 64;    
+    return {
+        ascender: ascender,
+        totalHeight: Math.floor(ascender + descender)
+    };
 }
 
 function monochromeImageBufferToColorImageBuffer(glyph: freetype.Glyph, inputBuffer: Uint8Array) {
@@ -31,16 +34,17 @@ function monochromeImageBufferToColorImageBuffer(glyph: freetype.Glyph, inputBuf
     const inputImageWidth = (glyph.metrics.width / 64);
     const imageWidth = leftSpacing + inputImageWidth + rightSpacing;
     const glyphHeight = glyph.metrics.height / 64;
-    const imageHeight = calculateFontHeight();
+    const { ascender, totalHeight } = calculateFontHeight();
 
-    const numPixels = (imageWidth * imageHeight * 4);
+    const numPixels = (imageWidth * totalHeight * 4);
 
     const outputBuffer = new Uint8Array(numPixels).fill(255);
+    const yOffset = Math.floor(ascender - (glyph.bitmapTop || 0));
 
     for (let y = 0; y < glyphHeight; y++) {
         for (let x = 0; x < inputImageWidth; x++) {
             const srcPos = (y * inputImageWidth) + x;
-            const destPos = leftSpacing + (y * imageWidth) + x;
+            const destPos = leftSpacing + ((y + yOffset) * imageWidth) + x;
             outputBuffer[4 * destPos] = 255 - inputBuffer[srcPos];
             outputBuffer[4 * destPos + 1] = 255 - inputBuffer[srcPos];
             outputBuffer[4 * destPos + 2] = 255 - inputBuffer[srcPos];
@@ -51,7 +55,7 @@ function monochromeImageBufferToColorImageBuffer(glyph: freetype.Glyph, inputBuf
     return {
         buffer: outputBuffer,
         imageWidth,
-        imageHeight
+        imageHeight: totalHeight
     };
 }
 
