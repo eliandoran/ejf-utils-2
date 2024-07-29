@@ -1,6 +1,6 @@
 const [ firstFilePath, secondFilePath ] = Deno.args;
 import { printImage } from "https://deno.land/x/terminal_images@3.1.0/mod.ts";
-import { BlobWriter } from "jsr:@zip-js/zip-js";
+import { BlobWriter, TextWriter } from "jsr:@zip-js/zip-js";
 import { Entry } from "jsr:@zip-js/zip-js";
 import { ZipReader } from "jsr:@zip-js/zip-js";
 
@@ -15,7 +15,23 @@ async function readArchive(ejfPath: string) {
     const entries = await archive.getEntries();
 
     const chars = new Map<string, CharData>();
+    let header;
     for (const entry of entries) {
+        if (entry.filename === "Header") {
+            if (!entry.getData) {
+                throw new Error("Unable to read header data.");
+            }
+            
+            const writer = new TextWriter();
+            await entry.getData(writer)
+
+            header = {
+                checksum: entry.signature,
+                data: await writer.getData()
+            };            
+            continue;
+        }
+
         if (entry.filename.startsWith("0x")) {         
             if (!entry.getData) {
                 throw new Error("Character with missing data function.");
@@ -27,13 +43,27 @@ async function readArchive(ejfPath: string) {
             });
         }
     }
+
+    if (!header) {
+        throw new Error("Unable to find EJF header.");
+    }
     
     return {
+        header,
         chars
     };
 }
 
 type EjfData = Awaited<ReturnType<typeof readArchive>>;
+
+function analyzeHeader(firstEjfData: EjfData, secondEjfData: EjfData) {
+    if (firstEjfData.header.data === secondEjfData.header.data) {
+        console.log("EJF headers are identical.");
+        return;
+    }
+
+    console.log("EJF header contains differences.");
+}
 
 async function findCharacterDifferences(firstEjfData: EjfData, secondEjfData: EjfData) {    
     const firstCharacterSet = new Set<string>(firstEjfData.chars.keys());
@@ -110,4 +140,5 @@ async function analyzeCharacterChange(firstCharData: CharData, secondCharData: C
 
 const firstEjfData = await readArchive(firstFilePath);
 const secondEjfData = await readArchive(secondFilePath);
+await analyzeHeader(firstEjfData, secondEjfData);
 await findCharacterDifferences(firstEjfData, secondEjfData);
