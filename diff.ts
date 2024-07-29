@@ -4,6 +4,7 @@ import { BlobWriter } from "jsr:@zip-js/zip-js";
 import { Entry } from "jsr:@zip-js/zip-js";
 import { ZipReader } from "jsr:@zip-js/zip-js";
 
+export const DISPLAY_PREVIEWS = false;
 interface CharData {
     checksum: number;
     getData: NonNullable<Entry['getData']>;
@@ -41,13 +42,15 @@ async function findCharacterDifferences(firstEjfData: EjfData, secondEjfData: Ej
     // Highlight removed characters.
     const removedCharacters = firstCharacterSet.difference(secondCharacterSet);
     for (const removedChar of removedCharacters) {
-        console.log(`-${removedChar} (${String.fromCharCode(removedChar)})`);
+        await previewCharacter(firstEjfData.chars.get(removedChar));
+        console.log(`-${removedChar} (${String.fromCharCode(+removedChar)})`);
     }
 
     // Highlight added characters.
     const addedCharacters = secondCharacterSet.difference(firstCharacterSet);
     for (const addedChar of addedCharacters) {
-        console.log(`+${addedChar} (${String.fromCharCode(addedChar)})`);
+        await previewCharacter(secondEjfData.chars.get(addedChar));
+        console.log(`+${addedChar} (${String.fromCharCode(+addedChar)})`);
     }
     
     // Highlight changed characters.
@@ -66,7 +69,28 @@ async function findCharacterDifferences(firstEjfData: EjfData, secondEjfData: Ej
     }
 }
 
+async function previewCharacter(charData: CharData | undefined) {
+    if (!DISPLAY_PREVIEWS) {
+        return;
+    }
+
+    if (!charData) {
+        console.warn("Unable to preview character since it could not be found.");
+        return;
+    }
+
+    const writer = new BlobWriter("image/png");
+    await charData.getData(writer);
+    await printImage({
+        rawFile: new Uint8Array(await (await writer.getData()).arrayBuffer()),
+    });
+}
+
 async function analyzeCharacterChange(firstCharData: CharData, secondCharData: CharData, ch: string) {
+    if (!DISPLAY_PREVIEWS) {
+        return;
+    }
+
     const firstWriter = new BlobWriter("image/png");
     const secondWriter = new BlobWriter("image/png");
     
