@@ -25,8 +25,8 @@ export default async function buildEjf(config: EjfConfig) {
         baseline: 13,
         characters: charRange,
         height: renderer.totalHeight,
+        spaceWidth: renderer.spaceWidth,
         name: basename(config.outputPath, extname(config.outputPath)),
-        spaceWidth: 0
     };
     console.log(info);
     console.timeEnd("header");
