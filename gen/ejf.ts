@@ -1,7 +1,7 @@
-import { BlobWriter, Uint8ArrayReader, ZipWriter } from "jsr:@zip-js/zip-js";
+import { BlobWriter, TextReader, TextWriter, Uint8ArrayReader, ZipWriter } from "jsr:@zip-js/zip-js";
 import parseCharRange from "./char_range.ts";
 import Renderer from "./renderer.ts";
-import { HeaderInfo } from "./header.ts";
+import buildHeader from "./header.ts";
 import { basename, extname } from "jsr:@std/path@0.224.0";
 
 interface EjfConfig {
@@ -20,18 +20,33 @@ export default async function buildEjf(config: EjfConfig) {
     const writer = new ZipWriter(blobWriter);
 
     // Write the header
+    writeHeader(writer, charRange, renderer, config);
+
+    // Render each character.
+    writeCharacters(writer, charRange, renderer);
+
+    await writer.close();
+    
+    console.time("write");
+    const data = await blobWriter.getData();
+    Deno.writeFileSync(config.outputPath, await data.bytes());
+    console.timeEnd("write");
+}
+
+async function writeHeader(writer: ZipWriter<Blob>, charRange: number[], renderer: Renderer, config: EjfConfig) {
     console.time("header");
-    const info: HeaderInfo = {
+    const headerData = buildHeader({
         baseline: 13,
         characters: charRange,
         height: renderer.totalHeight,
         spaceWidth: renderer.spaceWidth,
         name: basename(config.outputPath, extname(config.outputPath)),
-    };
-    console.log(info);
+    });
+    await writer.add("Header", new TextReader(headerData));
     console.timeEnd("header");
+}
 
-    // Render each character.
+async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], renderer: Renderer) {
     console.time("render-zip")
     for (const char of charRange) {        
         const charFileName = `0x${char.toString(16)}.png`;
@@ -42,11 +57,4 @@ export default async function buildEjf(config: EjfConfig) {
         await writer.add(`design_${charFileName}`, reader);
     }
     console.timeEnd("render-zip");
-
-    await writer.close();
-    
-    console.time("write");
-    const data = await blobWriter.getData();
-    Deno.writeFileSync(config.outputPath, await data.bytes());
-    console.timeEnd("write");
 }
