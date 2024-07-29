@@ -16,19 +16,28 @@ function renderCharacter(char: string) {
     });
 }
 
+function calculateFontHeight() {
+    const properties = face.properties();
+    const yScale = properties.size.yScale / 65536;
+    const ascender = Math.floor(properties.ascender * yScale) / 64;
+    const descender = -Math.floor(properties.descender * yScale) / 64;
+    return Math.floor(ascender + descender);
+}
+
 function monochromeImageBufferToColorImageBuffer(glyph: freetype.Glyph, inputBuffer: Uint8Array) {
     const leftSpacing = glyph.metrics.horiBearingX / 64;
     const rightSpacing = (glyph.metrics.horiAdvance - glyph.metrics.horiBearingX - glyph.metrics.width) / 64;    
 
     const inputImageWidth = (glyph.metrics.width / 64);
     const imageWidth = leftSpacing + inputImageWidth + rightSpacing;
-    const imageHeight = glyph.metrics.height / 64;
+    const glyphHeight = glyph.metrics.height / 64;
+    const imageHeight = calculateFontHeight();
 
     const numPixels = (imageWidth * imageHeight * 4);
 
     const outputBuffer = new Uint8Array(numPixels).fill(255);
 
-    for (let y = 0; y < imageHeight; y++) {
+    for (let y = 0; y < glyphHeight; y++) {
         for (let x = 0; x < inputImageWidth; x++) {
             const srcPos = (y * inputImageWidth) + x;
             const destPos = leftSpacing + (y * imageWidth) + x;
