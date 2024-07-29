@@ -77,17 +77,23 @@ async function findCharacterDifferences(firstEjfData: EjfData, secondEjfData: Ej
 
     // Highlight removed characters.
     const removedCharacters = firstCharacterSet.difference(secondCharacterSet);
-    for (const removedChar of removedCharacters) {
-        await previewCharacter(firstEjfData.chars.get(removedChar));
-        console.log(`-${removedChar} (${String.fromCharCode(+removedChar)})`);
+    if (removedCharacters.size > 0) {
+        console.log("The following characters were removed:");
+        console.log(summarizeCharacterChanges(removedCharacters));
+    } else {
+        console.log("No characters were removed.");
     }
+
+    console.log();
 
     // Highlight added characters.
     const addedCharacters = secondCharacterSet.difference(firstCharacterSet);
-    for (const addedChar of addedCharacters) {
-        await previewCharacter(secondEjfData.chars.get(addedChar));
-        console.log(`+${addedChar} (${String.fromCharCode(+addedChar)})`);
-    }
+    if (addedCharacters.size > 0) {
+        console.log("The following characters were added:");
+        console.log(summarizeCharacterChanges(addedCharacters));
+    } else {
+        console.log("No characters were added.");
+    }    
     
     // Highlight changed characters.
     const commonCharacters = firstCharacterSet.intersection(secondCharacterSet);
@@ -103,6 +109,14 @@ async function findCharacterDifferences(firstEjfData: EjfData, secondEjfData: Ej
 
         await analyzeCharacterChange(firstCharData, secondCharData, changedChar);
     }
+}
+
+function summarizeCharacterChanges(characterSet: Set<string>) {
+    let result = [];
+    for (const char of characterSet) {
+        result.push(`0x${(+char).toString(16)} (${String.fromCharCode(+char)})`);
+    }
+    return result.join(", ");
 }
 
 async function previewCharacter(charData: CharData | undefined) {
