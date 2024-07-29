@@ -24,8 +24,7 @@ export default class Renderer {
 
     render(char: string) {
         const glyph = this.renderCharacter(char);
-        const colorImageBuffer = this.monochromeImageBufferToColorImageBuffer(glyph, Uint8Array.from(glyph.bitmap?.buffer));
-        return this.buildPng(colorImageBuffer);
+        return this.monochromeImageBufferToColorImageBuffer(glyph, Uint8Array.from(glyph.bitmap?.buffer));
     }
 
     renderCharacter(char: string) {
@@ -58,15 +57,7 @@ export default class Renderer {
             }
         }
     
-        return {
-            buffer: outputBuffer,
-            imageWidth,
-            imageHeight: this.totalHeight
-        };
-    }
-    
-    buildPng(colorImageBuffer: ReturnType<typeof this.monochromeImageBufferToColorImageBuffer>) {    
-        return encode(colorImageBuffer.buffer, colorImageBuffer.imageWidth, colorImageBuffer.imageHeight);
+        return encode(outputBuffer, imageWidth, this.totalHeight);
     }
 
 }
