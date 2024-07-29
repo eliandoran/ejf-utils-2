@@ -1,6 +1,8 @@
-import { BlobWriter, Uint8ArrayReader, Writer, ZipWriter } from "jsr:@zip-js/zip-js";
+import { BlobWriter, Uint8ArrayReader, ZipWriter } from "jsr:@zip-js/zip-js";
 import parseCharRange from "./char_range.ts";
 import Renderer from "./renderer.ts";
+import { HeaderInfo } from "./header.ts";
+import { basename, extname } from "jsr:@std/path@0.224.0";
 
 interface EjfConfig {
     ttfPath: string;
@@ -16,6 +18,18 @@ export default async function buildEjf(config: EjfConfig) {
     
     const blobWriter = new BlobWriter("application/zip");
     const writer = new ZipWriter(blobWriter);
+
+    // Write the header
+    console.time("header");
+    const info: HeaderInfo = {
+        baseline: 13,
+        characters: charRange,
+        height: renderer.totalHeight,
+        name: basename(config.outputPath, extname(config.outputPath)),
+        spaceWidth: 0
+    };
+    console.log(info);
+    console.timeEnd("header");
 
     // Render each character.
     console.time("render-zip")

@@ -7,7 +7,7 @@ export default class Renderer {
 
     private face: freetype.FontFace;
     private ascender: number;
-    private totalHeight: number;
+    totalHeight: number;
 
     constructor(ttfPath: string, size: number) {
         const face = freetype.NewFace(ttfPath);

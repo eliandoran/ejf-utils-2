@@ -1,6 +1,6 @@
 import { stringify } from "jsr:@libs/xml/";
 
-interface HeaderInfo {
+export interface HeaderInfo {
     baseline: number;
     height: number;
     name: string,
