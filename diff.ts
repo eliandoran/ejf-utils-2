@@ -1,5 +1,4 @@
 #!/usr/bin/env -S deno run --allow-all
-const [ firstFilePath, secondFilePath ] = Deno.args;
 import { printImage } from "https://deno.land/x/terminal_images@3.1.0/mod.ts";
 import { BlobWriter, TextWriter } from "jsr:@zip-js/zip-js";
 import { Entry } from "jsr:@zip-js/zip-js";
@@ -159,7 +158,8 @@ async function analyzeCharacterChange(firstCharData: CharData, secondCharData: C
     });
 }
 
-const firstEjfData = await readArchive(firstFilePath);
-const secondEjfData = await readArchive(secondFilePath);
+const [ afterFilePath, beforeFilePath ] = Deno.args;
+const firstEjfData = await readArchive(beforeFilePath);
+const secondEjfData = await readArchive(afterFilePath);
 await analyzeHeader(firstEjfData, secondEjfData);
 await findCharacterDifferences(firstEjfData, secondEjfData);
