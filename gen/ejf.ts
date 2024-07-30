@@ -21,7 +21,12 @@ export default async function buildEjf(config: EjfConfig, workingDir: string) {
     const renderer = new Renderer(ttfPath, config.size);
     
     const blobWriter = new BlobWriter("application/zip");
-    const writer = new ZipWriter(blobWriter);
+    const date = new Date(0);
+    const writer = new ZipWriter(blobWriter, {
+        // We set a neutral timestamp to avoid the creation date changing the ZIP.
+        creationDate: date,
+        lastModDate: date
+    });
 
     // Write the header
     await writeHeader(writer, charRange, renderer, config);
