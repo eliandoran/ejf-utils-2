@@ -1,5 +1,6 @@
 import { encode } from "https://deno.land/x/pngs/mod.ts";
 import freetype, { Glyph } from "npm:freetype2";
+import GenerationError from "./errors.ts";
 
 const DPI = 72;
 
@@ -11,7 +12,7 @@ export default class Renderer {
     spaceWidth: number;
 
     constructor(ttfPath: string, size: number) {
-        const face = freetype.NewFace(ttfPath);
+        const face = this.getFont(ttfPath);
         const charWidth = size;
         face.setCharSize(charWidth, 0, DPI, 0);
         this.face = face;
@@ -45,6 +46,14 @@ export default class Renderer {
         }
     
         return encode(outputBuffer, widthWithSpacing, this.totalHeight);
+    }
+
+    private getFont(ttfPath: string) {
+        try {
+            freetype.NewFace(ttfPath);
+        } catch (e) {
+            throw new GenerationError("The font could not be loaded.");
+        }
     }
 
     private getGlyph(charCode: number): Glyph {

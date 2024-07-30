@@ -4,17 +4,19 @@ import Renderer from "./renderer.ts";
 import buildHeader from "./header.ts";
 import { basename, extname } from "jsr:@std/path@^1.0.0";
 
-interface EjfConfig {
-    ttfPath: string;
-    outputPath: string;
+export interface EjfConfig {
+    char_range: string;
+    ignore_char_range: string;
+    input: string;
+    output: string;
     size: number;
-    charRange: string;
+    skip_control_characters: boolean;
+    add_null_characters: boolean;
 }
 
 export default async function buildEjf(config: EjfConfig) {
-    const { ttfPath, size } = config;
-    const charRange = parseCharRange(config.charRange);
-    const renderer = new Renderer(ttfPath, size);
+    const charRange = parseCharRange(config.char_range);
+    const renderer = new Renderer(config.input, config.size);
     
     const blobWriter = new BlobWriter("application/zip");
     const writer = new ZipWriter(blobWriter);
@@ -29,7 +31,7 @@ export default async function buildEjf(config: EjfConfig) {
     
     console.time("write");
     const data = await blobWriter.getData();
-    Deno.writeFileSync(config.outputPath, await data.bytes());
+    Deno.writeFileSync(config.output, data);
     console.timeEnd("write");
 }
 
@@ -40,7 +42,7 @@ async function writeHeader(writer: ZipWriter<Blob>, charRange: number[], rendere
         characters: charRange,
         height: renderer.totalHeight,
         spaceWidth: renderer.spaceWidth,
-        name: basename(config.outputPath, extname(config.outputPath)),
+        name: basename(config.output, extname(config.output)),
     });
     await writer.add("Header", new TextReader(headerData));
     console.timeEnd("header");

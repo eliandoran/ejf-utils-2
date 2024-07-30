@@ -1,11 +1,30 @@
+import parseConfig from "./config.ts";
 import buildEjf from "./ejf.ts";
+import GenerationError from "./errors.ts";
 
-const ttfPath = Deno.args[0];
-const outputPath = Deno.args[1];
+const configPath = Deno.args[0];
 
-await buildEjf({
-    ttfPath,
-    outputPath,
-    charRange: "0x2d,0x30-0x3b,0x41-0x5b,0x61-0x7a",
-    size: 40
-});
+async function main() {
+    if (!configPath) {
+        console.error("Missing config path.");
+        return;
+    }
+
+    const config = parseConfig(configPath);
+
+    try {
+        for (const ejfConfig of config) {
+            console.log(`Building ${ejfConfig.output}...`);
+            await buildEjf(ejfConfig);
+        }
+    } catch (e) {
+        if (e instanceof GenerationError) {
+            console.error(e.message);
+            return;
+        }
+
+        throw e;
+    }
+}
+
+main();
