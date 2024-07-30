@@ -2,7 +2,7 @@ import { BlobWriter, TextReader, Uint8ArrayReader, ZipWriter } from "jsr:@zip-js
 import parseCharRange from "./char_range.ts";
 import Renderer from "./renderer.ts";
 import buildHeader from "./header.ts";
-import { basename, extname, resolve } from "jsr:@std/path@^1.0.0";
+import { basename, extname, join, resolve } from "jsr:@std/path@^1.0.0";
 import GenerationError from "./errors.ts";
 
 export interface EjfConfig {
@@ -33,7 +33,8 @@ export default async function buildEjf(config: EjfConfig, workingDir: string) {
     
     console.time("write");
     const data = await blobWriter.getData();
-    Deno.writeFileSync(config.output, data, {});
+    const outputPath = join(workingDir, config.output);
+    Deno.writeFileSync(outputPath, new Uint8Array(await data.arrayBuffer()), {});
     console.timeEnd("write");
 }
 
@@ -51,7 +52,7 @@ async function writeHeader(writer: ZipWriter<Blob>, charRange: number[], rendere
 }
 
 async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], renderer: Renderer) {
-    console.time("render-zip")
+    console.time("render-all")
     for (const char of charRange) {        
         const charFileName = `0x${char.toString(16)}.png`;
         const renderedChar = renderer.render(char);
@@ -64,5 +65,5 @@ async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], ren
         }
         await writer.add(`design_${charFileName}`, reader);
     }
-    console.timeEnd("render-zip");
+    console.timeEnd("render-all");
 }

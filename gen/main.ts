@@ -18,6 +18,7 @@ async function main() {
         for (const ejfConfig of config) {
             console.log(`Building ${ejfConfig.output}...`);
             await buildEjf(ejfConfig, workingDir);
+            console.log();
         }
     } catch (e) {
         if (e instanceof GenerationError) {
