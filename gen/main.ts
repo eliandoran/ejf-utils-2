@@ -1,6 +1,7 @@
 import parseConfig from "./config.ts";
 import buildEjf from "./ejf.ts";
 import GenerationError from "./errors.ts";
+import { dirname } from "jsr:@std/path@^1.0.0";
 
 const configPath = Deno.args[0];
 
@@ -11,11 +12,12 @@ async function main() {
     }
 
     const config = parseConfig(configPath);
+    const workingDir = dirname(configPath);
 
     try {
         for (const ejfConfig of config) {
             console.log(`Building ${ejfConfig.output}...`);
-            await buildEjf(ejfConfig);
+            await buildEjf(ejfConfig, workingDir);
         }
     } catch (e) {
         if (e instanceof GenerationError) {

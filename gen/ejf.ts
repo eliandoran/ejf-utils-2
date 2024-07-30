@@ -2,7 +2,7 @@ import { BlobWriter, TextReader, Uint8ArrayReader, ZipWriter } from "jsr:@zip-js
 import parseCharRange from "./char_range.ts";
 import Renderer from "./renderer.ts";
 import buildHeader from "./header.ts";
-import { basename, extname } from "jsr:@std/path@^1.0.0";
+import { basename, extname, resolve } from "jsr:@std/path@^1.0.0";
 
 export interface EjfConfig {
     char_range: string;
@@ -14,9 +14,10 @@ export interface EjfConfig {
     add_null_characters: boolean;
 }
 
-export default async function buildEjf(config: EjfConfig) {
-    const charRange = parseCharRange(config.char_range);
-    const renderer = new Renderer(config.input, config.size);
+export default async function buildEjf(config: EjfConfig, workingDir: string) {
+    const charRange = parseCharRange(config.char_range);    
+    const ttfPath = resolve(workingDir, config.input);
+    const renderer = new Renderer(ttfPath, config.size);
     
     const blobWriter = new BlobWriter("application/zip");
     const writer = new ZipWriter(blobWriter);

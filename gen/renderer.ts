@@ -1,4 +1,5 @@
 import { encode } from "https://deno.land/x/pngs/mod.ts";
+import {existsSync} from "https://deno.land/std/fs/mod.ts";
 import freetype, { Glyph } from "npm:freetype2";
 import GenerationError from "./errors.ts";
 
@@ -49,8 +50,12 @@ export default class Renderer {
     }
 
     private getFont(ttfPath: string) {
+        if (!existsSync(ttfPath)) {
+            throw new GenerationError(`Unable to find the font located at "${ttfPath}". If you are using relative paths make sure that the file is correct relative to the location of the configuration file.`);
+        }
+
         try {
-            freetype.NewFace(ttfPath);
+            return freetype.NewFace(ttfPath);
         } catch (e) {
             throw new GenerationError("The font could not be loaded.");
         }
