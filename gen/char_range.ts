@@ -1,4 +1,16 @@
 export default function parseCharRange(charRange: string) {
+    return getRawRange(charRange).filter((ch) => {
+        if (ch === 0x20) {
+            // The space character is ignored as per the original implementation. This is due to the fact
+            // that it's a redundant character since it's supported natively by spaceWidth inside the header.
+            return false;
+        }
+
+        return true;
+    });
+}
+
+function getRawRange(charRange: string) {
     const components = charRange
         .replace(/;/g, ",")
         .replace(/\s*/g, "")
