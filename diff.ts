@@ -1,3 +1,4 @@
+#!/usr/bin/env -S deno run --allow-all
 const [ firstFilePath, secondFilePath ] = Deno.args;
 import { printImage } from "https://deno.land/x/terminal_images@3.1.0/mod.ts";
 import { BlobWriter, TextWriter } from "jsr:@zip-js/zip-js";
