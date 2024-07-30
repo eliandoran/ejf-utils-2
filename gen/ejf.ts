@@ -65,7 +65,7 @@ async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], ren
 
     progressData.total = charRange.length;
     for (const char of charRange) {        
-        const charFileName = `0x${char.toString(16)}.png`;
+        const charFileName = `0x${char.toString(16)}`;
         const renderedChar = renderer.render(char);
         
         const reader = new Uint8ArrayReader(renderedChar); 
