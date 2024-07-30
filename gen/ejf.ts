@@ -69,8 +69,8 @@ async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], ren
         
         const reader = new Uint8ArrayReader(renderedChar); 
         try {
-            await writer.add(`design_${charFileName}`, reader);
             await writer.add(charFileName, reader);
+            await writer.add(`design_${charFileName}`, reader);
             progressData.current++;
         } catch (e: any) {
             throw new GenerationError(`Error while attempting to add ${charFileName} to the ZIP file: ${e.message}`);
