@@ -30,9 +30,10 @@ export default async function buildEjf(config: EjfConfig, workingDir: string, pr
     const writer = new ZipWriter(blobWriter, {
         // No compression to speed up writing time but also since PNGs generally don't compress that well.
         level: 0,
-        
-        // We set a neutral timestamp to avoid the creation date changing the ZIP.
+        // Remove unnecessary metadata to maintain as much compatibility as possible with previous implementation.
+        dataDescriptor: false,
         extendedTimestamp: false,
+        // We set a neutral timestamp to avoid the creation date changing the ZIP.
         lastModDate: date,
     });
 
@@ -68,11 +69,11 @@ async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], ren
         
         const reader = new Uint8ArrayReader(renderedChar); 
         try {
+            await writer.add(`design_${charFileName}`, reader);
             await writer.add(charFileName, reader);
             progressData.current++;
         } catch (e: any) {
             throw new GenerationError(`Error while attempting to add ${charFileName} to the ZIP file: ${e.message}`);
         }
-        await writer.add(`design_${charFileName}`, reader);
     }    
 }
