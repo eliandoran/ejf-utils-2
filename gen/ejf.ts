@@ -26,21 +26,21 @@ export default async function buildEjf(config: EjfConfig, workingDir: string, pr
     const renderer = new Renderer(ttfPath, config.size);
     
     const blobWriter = new BlobWriter("application/zip");
-    const date = new Date(0);
+    const date = new Date(315522000000);
     const writer = new ZipWriter(blobWriter, {
         // No compression to speed up writing time but also since PNGs generally don't compress that well.
         level: 0,
-
+        
         // We set a neutral timestamp to avoid the creation date changing the ZIP.
-        creationDate: date,
-        lastModDate: date
+        extendedTimestamp: false,
+        lastModDate: date,
     });
-
-    // Write the header
-    await writeHeader(writer, charRange, renderer, config);
 
     // Render each character.
     await writeCharacters(writer, charRange, renderer, progressData);
+
+    // Write the header
+    await writeHeader(writer, charRange, renderer, config);
 
     await writer.close();
     
@@ -61,8 +61,6 @@ async function writeHeader(writer: ZipWriter<Blob>, charRange: number[], rendere
 }
 
 async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], renderer: Renderer, progressData: ProgressData) {
-    const promises = [];
-
     progressData.total = charRange.length;
     for (const char of charRange) {        
         const charFileName = `0x${char.toString(16)}`;
@@ -70,14 +68,11 @@ async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], ren
         
         const reader = new Uint8ArrayReader(renderedChar); 
         try {
-            promises.push(writer.add(charFileName, reader).then(() => {
-                progressData.current++;
-            }));
+            await writer.add(charFileName, reader);
+            progressData.current++;
         } catch (e: any) {
             throw new GenerationError(`Error while attempting to add ${charFileName} to the ZIP file: ${e.message}`);
         }
         await writer.add(`design_${charFileName}`, reader);
-    }
-    
-    await Promise.all(promises);
+    }    
 }
