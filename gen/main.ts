@@ -21,7 +21,7 @@ async function main() {
         }
     } catch (e) {
         if (e instanceof GenerationError) {
-            console.error(e.message);
+            console.error(e.message, e.context || "");
             return;
         }
 

@@ -4,6 +4,7 @@ import freetype, { Glyph } from "npm:freetype2";
 import GenerationError from "./errors.ts";
 
 const DPI = 72;
+const STRICT = false;
 
 export default class Renderer {
 
@@ -31,26 +32,31 @@ export default class Renderer {
         const { leftSpacing, glyphWidth, glyphHeight, widthWithSpacing } = this.getMetrics(glyph);
         const numPixels = (widthWithSpacing * this.totalHeight * 4);
     
-        if (!glyph.bitmap) {
+        if (!glyph.bitmap && STRICT) {
             throw new GenerationError(`Unable to render character with code 0x${charCode.toString(16)} (${String.fromCharCode(charCode)}).`);
         }
 
-        const inputBuffer = Uint8Array.from(glyph.bitmap.buffer);
+        if (widthWithSpacing === 0) {
+            throw new GenerationError(`Encountered zero width while attempting to render character 0x${charCode.toString(16)} (${String.fromCharCode(charCode)}) `, this.getMetrics(glyph));
+        }
 
         const outputBuffer = new Uint8Array(numPixels).fill(255);
-        const yOffset = Math.floor(this.ascender - (glyph.bitmapTop || 0));
-    
-        for (let y = 0; y < glyphHeight; y++) {
-            for (let x = 0; x < glyphWidth; x++) {
-                const srcPos = (y * glyphWidth) + x;
-                const destPos = leftSpacing + ((y + yOffset) * widthWithSpacing) + x;
-                outputBuffer[4 * destPos] = 255 - inputBuffer[srcPos];
-                outputBuffer[4 * destPos + 1] = 255 - inputBuffer[srcPos];
-                outputBuffer[4 * destPos + 2] = 255 - inputBuffer[srcPos];
-                outputBuffer[4 * destPos + 3] = 255;
+        
+        if (glyph.bitmap) {
+            const yOffset = Math.floor(this.ascender - (glyph.bitmapTop || 0));
+            const inputBuffer = Uint8Array.from(glyph.bitmap.buffer);
+            for (let y = 0; y < glyphHeight; y++) {
+                for (let x = 0; x < glyphWidth; x++) {
+                    const srcPos = (y * glyphWidth) + x;
+                    const destPos = leftSpacing + ((y + yOffset) * widthWithSpacing) + x;
+                    outputBuffer[4 * destPos] = 255 - inputBuffer[srcPos];
+                    outputBuffer[4 * destPos + 1] = 255 - inputBuffer[srcPos];
+                    outputBuffer[4 * destPos + 2] = 255 - inputBuffer[srcPos];
+                    outputBuffer[4 * destPos + 3] = 255;
+                }
             }
         }
-    
+
         return encode(outputBuffer, widthWithSpacing, this.totalHeight);
     }
 
@@ -73,8 +79,9 @@ export default class Renderer {
     }
 
     private getMetrics(glyph: Glyph) {
-        const leftSpacing = glyph.metrics.horiBearingX / 64;
-        const rightSpacing = (glyph.metrics.horiAdvance - glyph.metrics.horiBearingX - glyph.metrics.width) / 64;    
+        // Some characters can have negative spacing, which is not supported by the MicroEJ engine so we ignore it.
+        const leftSpacing = Math.max(0, glyph.metrics.horiBearingX / 64);
+        const rightSpacing = Math.max(0, (glyph.metrics.horiAdvance - glyph.metrics.horiBearingX - glyph.metrics.width) / 64);
         const glyphWidth = (glyph.metrics.width / 64);
     
         return {
