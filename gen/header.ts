@@ -40,5 +40,9 @@ export default function buildHeader(info: HeaderInfo) {
         }
     };
 
-    return stringify(data);
+    return stringify(data, {
+        format: {
+            indent: ""
+        }
+    });
 }
