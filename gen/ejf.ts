@@ -1,4 +1,4 @@
-import { BlobWriter, TextReader, Uint8ArrayReader, ZipWriter } from "jsr:@zip-js/zip-js";
+import { BlobWriter, TextReader, Uint8ArrayReader, ZipWriter } from "https://raw.githubusercontent.com/eliandoran/zip.js/9ac0e13238e7b386c2242425576b616536ae2f70/index.js";
 import parseCharRange from "./char_range.ts";
 import Renderer from "./renderer.ts";
 import buildHeader from "./header.ts";
@@ -33,6 +33,8 @@ export default async function buildEjf(config: EjfConfig, workingDir: string, pr
         // Remove unnecessary metadata to maintain as much compatibility as possible with previous implementation.
         dataDescriptor: false,
         extendedTimestamp: false,
+        useUnicodeFileNames: false,
+        
         // We set a neutral timestamp to avoid the creation date changing the ZIP.
         lastModDate: date,
     });
