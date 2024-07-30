@@ -1,10 +1,16 @@
 import { EjfConfig } from "./ejf.ts";
+import unicode from "https://deno.land/x/unicode/mod.ts";
 
 export default function parseCharRange(charRange: string, config?: EjfConfig) {        
     const filtered = getRawRange(charRange).filter((ch) => {
         if (ch === 0x20) {
             // The space character is ignored as per the original implementation. This is due to the fact
             // that it's a redundant character since it's supported natively by spaceWidth inside the header.
+            return false;
+        }
+
+        // Ignore control characters.
+        if (config?.skip_control_characters && unicode[ ch]?.category === "Cc") {
             return false;
         }
 
