@@ -23,10 +23,10 @@ export default async function buildEjf(config: EjfConfig, workingDir: string) {
     const writer = new ZipWriter(blobWriter);
 
     // Write the header
-    writeHeader(writer, charRange, renderer, config);
+    await writeHeader(writer, charRange, renderer, config);
 
     // Render each character.
-    writeCharacters(writer, charRange, renderer);
+    await writeCharacters(writer, charRange, renderer);
 
     await writer.close();
     

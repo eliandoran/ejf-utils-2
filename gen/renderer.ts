@@ -31,7 +31,12 @@ export default class Renderer {
         const { leftSpacing, glyphWidth, glyphHeight, widthWithSpacing } = this.getMetrics(glyph);
         const numPixels = (widthWithSpacing * this.totalHeight * 4);
     
-        const inputBuffer = Uint8Array.from(glyph.bitmap?.buffer);
+        if (!glyph.bitmap) {
+            throw new GenerationError(`Unable to render character with code 0x${charCode.toString(16)} (${String.fromCharCode(charCode)}).`);
+        }
+
+        const inputBuffer = Uint8Array.from(glyph.bitmap.buffer);
+
         const outputBuffer = new Uint8Array(numPixels).fill(255);
         const yOffset = Math.floor(this.ascender - (glyph.bitmapTop || 0));
     
