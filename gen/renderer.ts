@@ -36,10 +36,6 @@ export default class Renderer {
             throw new GenerationError(`Unable to render character with code 0x${charCode.toString(16)} (${String.fromCharCode(charCode)}).`);
         }
 
-        if (widthWithSpacing === 0) {
-            throw new GenerationError(`Encountered zero width while attempting to render character 0x${charCode.toString(16)} (${String.fromCharCode(charCode)}) `, this.getMetrics(glyph));
-        }
-
         const outputBuffer = new Uint8Array(numPixels).fill(255);
         
         if (glyph.bitmap) {
@@ -89,7 +85,8 @@ export default class Renderer {
             rightSpacing,
             glyphWidth,
             glyphHeight: (glyph.metrics.height / 64),
-            widthWithSpacing: (leftSpacing + glyphWidth + rightSpacing)
+            // We apply a minimum width of 1 since otherwise it would crash when allocating the image.
+            widthWithSpacing: Math.max(1, leftSpacing + glyphWidth + rightSpacing)
         }
     }
 
