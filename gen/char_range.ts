@@ -1,8 +1,11 @@
 import { EjfConfig } from "./ejf.ts";
 import unicode from "https://deno.land/x/unicode/mod.ts";
 
-export default function parseCharRange(charRange: string, config?: EjfConfig) {        
-    const filtered = getRawRange(charRange).filter((ch) => {
+export default function parseCharRange(config: EjfConfig) {        
+    const charRange = getRawRange(config.char_range);
+    const ignoreCharRange = getRawRange(config.ignore_char_range);
+
+    const filtered = charRange.filter((ch) => {
         if (ch === 0x20) {
             // The space character is ignored as per the original implementation. This is due to the fact
             // that it's a redundant character since it's supported natively by spaceWidth inside the header.
@@ -17,10 +20,13 @@ export default function parseCharRange(charRange: string, config?: EjfConfig) {
         return true;
     });
 
-    const charSet = new Set(filtered);
+    let charSet = new Set(filtered);
     if (config?.add_null_character) {
         charSet.add(0);
     }
+
+    // Remove all the ignored characters.
+    charSet = charSet.difference(new Set(ignoreCharRange));
 
     // Remove duplicate characters.
     return Array.from(charSet);

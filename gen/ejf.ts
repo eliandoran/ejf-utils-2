@@ -21,7 +21,7 @@ export interface ProgressData {
 }
 
 export default async function buildEjf(config: EjfConfig, workingDir: string, progressData: ProgressData) {
-    const charRange = parseCharRange(config.char_range, config);    
+    const charRange = parseCharRange(config);    
     const ttfPath = resolve(workingDir, config.input);
     const renderer = new Renderer(ttfPath, config.size);
     
