@@ -3,6 +3,7 @@ import parseCharRange from "./char_range.ts";
 import Renderer from "./renderer.ts";
 import buildHeader from "./header.ts";
 import { basename, extname, resolve } from "jsr:@std/path@^1.0.0";
+import GenerationError from "./errors.ts";
 
 export interface EjfConfig {
     char_range: string;
@@ -32,7 +33,7 @@ export default async function buildEjf(config: EjfConfig, workingDir: string) {
     
     console.time("write");
     const data = await blobWriter.getData();
-    Deno.writeFileSync(config.output, data);
+    Deno.writeFileSync(config.output, data, {});
     console.timeEnd("write");
 }
 
@@ -55,8 +56,12 @@ async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], ren
         const charFileName = `0x${char.toString(16)}.png`;
         const renderedChar = renderer.render(char);
         
-        const reader = new Uint8ArrayReader(renderedChar);        
-        await writer.add(charFileName, reader);
+        const reader = new Uint8ArrayReader(renderedChar); 
+        try {
+            await writer.add(charFileName, reader);
+        } catch (e: any) {
+            throw new GenerationError(`Error while attempting to add ${charFileName} to the ZIP file: ${e.message}`);
+        }
         await writer.add(`design_${charFileName}`, reader);
     }
     console.timeEnd("render-zip");
