@@ -39,15 +39,12 @@ export default async function buildEjf(config: EjfConfig, workingDir: string) {
 
     await writer.close();
     
-    console.time("write");
     const data = await blobWriter.getData();
     const outputPath = join(workingDir, config.output);
     Deno.writeFileSync(outputPath, new Uint8Array(await data.arrayBuffer()), {});
-    console.timeEnd("write");
 }
 
 async function writeHeader(writer: ZipWriter<Blob>, charRange: number[], renderer: Renderer, config: EjfConfig) {
-    console.time("header");
     const headerData = buildHeader({
         baseline: 13,
         characters: charRange,
@@ -56,11 +53,9 @@ async function writeHeader(writer: ZipWriter<Blob>, charRange: number[], rendere
         name: basename(config.output, extname(config.output)),
     });
     await writer.add("Header", new TextReader(headerData));
-    console.timeEnd("header");
 }
 
 async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], renderer: Renderer) {
-    console.time("render-all")
     const promises = [];
     for (const char of charRange) {        
         const charFileName = `0x${char.toString(16)}.png`;
@@ -76,5 +71,4 @@ async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], ren
     }
     
     await Promise.all(promises);
-    console.timeEnd("render-all");
 }
