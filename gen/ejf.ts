@@ -61,17 +61,20 @@ async function writeHeader(writer: ZipWriter<Blob>, charRange: number[], rendere
 
 async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], renderer: Renderer) {
     console.time("render-all")
+    const promises = [];
     for (const char of charRange) {        
         const charFileName = `0x${char.toString(16)}.png`;
         const renderedChar = renderer.render(char);
         
         const reader = new Uint8ArrayReader(renderedChar); 
         try {
-            await writer.add(charFileName, reader);
+            promises.push(writer.add(charFileName, reader));
         } catch (e: any) {
             throw new GenerationError(`Error while attempting to add ${charFileName} to the ZIP file: ${e.message}`);
         }
         await writer.add(`design_${charFileName}`, reader);
     }
+    
+    await Promise.all(promises);
     console.timeEnd("render-all");
 }
