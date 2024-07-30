@@ -1,4 +1,6 @@
-export default function parseCharRange(charRange: string) {
+import { EjfConfig } from "./ejf.ts";
+
+export default function parseCharRange(charRange: string, config?: EjfConfig) {        
     const filtered = getRawRange(charRange).filter((ch) => {
         if (ch === 0x20) {
             // The space character is ignored as per the original implementation. This is due to the fact
@@ -9,8 +11,13 @@ export default function parseCharRange(charRange: string) {
         return true;
     });
 
+    const charSet = new Set(filtered);
+    if (config?.add_null_character) {
+        charSet.add(0);
+    }
+
     // Remove duplicate characters.
-    return Array.from(new Set(filtered));
+    return Array.from(charSet);
 }
 
 function getRawRange(charRange: string) {

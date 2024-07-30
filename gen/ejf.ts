@@ -12,11 +12,11 @@ export interface EjfConfig {
     output: string;
     size: number;
     skip_control_characters: boolean;
-    add_null_characters: boolean;
+    add_null_character: boolean;
 }
 
 export default async function buildEjf(config: EjfConfig, workingDir: string) {
-    const charRange = parseCharRange(config.char_range);    
+    const charRange = parseCharRange(config.char_range, config);    
     const ttfPath = resolve(workingDir, config.input);
     const renderer = new Renderer(ttfPath, config.size);
     
