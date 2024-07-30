@@ -23,6 +23,9 @@ export default async function buildEjf(config: EjfConfig, workingDir: string) {
     const blobWriter = new BlobWriter("application/zip");
     const date = new Date(0);
     const writer = new ZipWriter(blobWriter, {
+        // No compression to speed up writing time but also since PNGs generally don't compress that well.
+        level: 0,
+
         // We set a neutral timestamp to avoid the creation date changing the ZIP.
         creationDate: date,
         lastModDate: date
