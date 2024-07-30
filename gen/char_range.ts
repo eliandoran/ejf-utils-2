@@ -29,7 +29,7 @@ export default function parseCharRange(config: EjfConfig) {
     charSet = charSet.difference(new Set(ignoreCharRange));
 
     // Remove duplicate characters.
-    return Array.from(charSet);
+    return Array.from(charSet).toSorted((a, b) => a-b);
 }
 
 function getRawRange(charRange: string) {
