@@ -15,7 +15,12 @@ export interface EjfConfig {
     add_null_character: boolean;
 }
 
-export default async function buildEjf(config: EjfConfig, workingDir: string) {
+export interface ProgressData {
+    current: number,
+    total: number
+}
+
+export default async function buildEjf(config: EjfConfig, workingDir: string, progressData: ProgressData) {
     const charRange = parseCharRange(config.char_range, config);    
     const ttfPath = resolve(workingDir, config.input);
     const renderer = new Renderer(ttfPath, config.size);
@@ -35,7 +40,7 @@ export default async function buildEjf(config: EjfConfig, workingDir: string) {
     await writeHeader(writer, charRange, renderer, config);
 
     // Render each character.
-    await writeCharacters(writer, charRange, renderer);
+    await writeCharacters(writer, charRange, renderer, progressData);
 
     await writer.close();
     
@@ -55,15 +60,19 @@ async function writeHeader(writer: ZipWriter<Blob>, charRange: number[], rendere
     await writer.add("Header", new TextReader(headerData));
 }
 
-async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], renderer: Renderer) {
+async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], renderer: Renderer, progressData: ProgressData) {
     const promises = [];
+
+    progressData.total = charRange.length;
     for (const char of charRange) {        
         const charFileName = `0x${char.toString(16)}.png`;
         const renderedChar = renderer.render(char);
         
         const reader = new Uint8ArrayReader(renderedChar); 
         try {
-            promises.push(writer.add(charFileName, reader));
+            promises.push(writer.add(charFileName, reader).then(() => {
+                progressData.current++;
+            }));
         } catch (e: any) {
             throw new GenerationError(`Error while attempting to add ${charFileName} to the ZIP file: ${e.message}`);
         }
