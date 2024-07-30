@@ -68,7 +68,7 @@ function analyzeHeader(firstEjfData: EjfData, secondEjfData: EjfData) {
         return;
     }
 
-    console.log("EJF header contains differences:\n", headerDiff);
+    console.log(`EJF header contains differences:\n${headerDiff}`);
 }
 
 async function findCharacterDifferences(firstEjfData: EjfData, secondEjfData: EjfData) {    
@@ -158,7 +158,21 @@ async function analyzeCharacterChange(firstCharData: CharData, secondCharData: C
     });
 }
 
-const [ afterFilePath, beforeFilePath ] = Deno.args;
+let beforeFilePath;
+let afterFilePath;
+if (Deno.args.length === 7) {
+    // 7 arguments means that the tool was called through Git. We also display the file name for convenience.
+    const [ path, oldFile, oldHex, oldMode, newFile, newHex, newMode ] = Deno.args;
+    console.log(`\nejf-diff ${path}`);
+    beforeFilePath = oldFile;
+    afterFilePath = newFile;    
+} else {
+    const [ oldFile, newFile ] = Deno.args;
+    beforeFilePath = oldFile;
+    afterFilePath = newFile;
+}
+
+
 const firstEjfData = await readArchive(beforeFilePath);
 const secondEjfData = await readArchive(afterFilePath);
 await analyzeHeader(firstEjfData, secondEjfData);
