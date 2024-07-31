@@ -18,13 +18,16 @@ export interface EjfConfig {
 
 export interface ProgressData {
     current: number,
-    total: number
+    total: number,
+    /** The height of the generated font, in pixels. */
+    height: number
 }
 
 export default async function buildEjf(config: EjfConfig, workingDir: string, progressData: ProgressData) {
     const charRange = parseCharRange(config);    
     const ttfPath = resolve(workingDir, config.input);
     const renderer = new Renderer(ttfPath, config.size);
+    progressData.height = renderer.totalHeight;
     
     const blobWriter = new BlobWriter("application/zip");
     const date = new Date(315522000000);

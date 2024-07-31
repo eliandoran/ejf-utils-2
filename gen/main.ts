@@ -24,7 +24,8 @@ async function main() {
         for (const ejfConfig of config) {
             const progressData: ProgressData = {
                 current: 0,
-                total: 0
+                total: 0,
+                height: 0
             }
             progressMap[ejfConfig.name] = progressData;
             promises.push(buildEjf(ejfConfig, workingDir, progressData));
@@ -41,7 +42,7 @@ async function main() {
     const updateInterval = setInterval(async () => {
         const renderData = Object.entries(progressMap).map(([name, data]) => {
             return {
-                text: name,
+                text: `${name}, height: ${data.height}px`,
                 completed: data.current,
                 total: data.total
             };
