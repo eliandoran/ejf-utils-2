@@ -18,27 +18,6 @@ async function main() {
     const progress = new MultiProgressBar({
         display: ":bar :eta :completed/:total :text",
     });
-
-    const promises = [];
-    try {
-        for (const ejfConfig of config.fonts) {
-            const progressData: ProgressData = {
-                current: 0,
-                total: 0,
-                height: 0
-            }
-            progressMap[ejfConfig.name] = progressData;
-            promises.push(buildEjf(ejfConfig, workingDir, progressData));
-        }
-    } catch (e) {
-        if (e instanceof GenerationError) {
-            console.error(e.message, e.context || "");
-            return;
-        }
-
-        throw e;
-    }
-
     const updateInterval = setInterval(async () => {
         const renderData = Object.entries(progressMap).map(([name, data]) => {
             return {
@@ -52,7 +31,27 @@ async function main() {
         }
     }, 250);
 
-    await Promise.all(promises);
+    const promises = [];
+    try {
+        for (const ejfConfig of config.fonts) {
+            const progressData: ProgressData = {
+                current: 0,
+                total: 0,
+                height: 0
+            }
+            progressMap[ejfConfig.name] = progressData;
+            promises.push(buildEjf(ejfConfig, workingDir, progressData));
+        }
+
+        await Promise.all(promises);
+    } catch (e) {
+        if (e instanceof GenerationError) {
+            console.error("ERROR:", e.message, e.context || "");
+            return;
+        }
+
+        throw e;
+    }
 
     clearInterval(updateInterval);
 }

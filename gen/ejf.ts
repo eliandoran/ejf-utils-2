@@ -15,6 +15,10 @@ export interface ProgressData {
 
 export default async function buildEjf(config: EjfConfig, workingDir: string, progressData: ProgressData) {
     const charRange = parseCharRange(config);    
+    if (!charRange.length) {
+        throw new GenerationError(`The font ${config.name} has no characters.`);
+    }
+
     const ttfPath = resolve(workingDir, config.input);
     const renderer = new Renderer(ttfPath, config.size);
     progressData.height = renderer.totalHeight;
