@@ -4,12 +4,26 @@ import { basename, extname } from "jsr:@std/path@^1.0.0";
 
 export default function parseConfig(path: string): EjfConfig[] {
     const configString = Deno.readTextFileSync(path);
-    const config = parseToml(configString) as EjfConfig[];    
+    let config;
+    
+    if (extname(path) === ".toml") {
+        config = parseToml(configString) as EjfConfig[];    
+    } else if (extname(path) === ".json") {
+        config = parseJson(configString);
+    } else {
+        throw new Error("Unable to determine the format of the configuration file.");
+    }
+
     for (const ejfConfig of config) {
         ejfConfig.name = basename(ejfConfig.output, extname(ejfConfig.output));
     }
 
     return config;
+}
+
+function parseJson(configString: string) {
+    const data = JSON.parse(configString);
+    return data.fonts;
 }
 
 function parseToml(configString: string) {    
