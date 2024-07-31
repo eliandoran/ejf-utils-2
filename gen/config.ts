@@ -19,6 +19,10 @@ export interface EjfConfig {
     addNullCharacter: boolean;
 }
 
+interface JsonEjfConfig extends EjfConfig {
+    template: string;
+}
+
 export default function parseConfig(path: string): Config {
     const configString = Deno.readTextFileSync(path);
     let config: Config;
@@ -44,7 +48,7 @@ function parseJson(configString: string) {
     const fonts: EjfConfig[] = [];
     const sharedSettings = data.sharedFontSettings || {};
     const templates: Record<string, object> = data.templates;
-    for (const font of data.fonts) {        
+    for (const [ name, font ] of Object.entries(data.fonts as Record<string, JsonEjfConfig>)) {
         let templateData = {};
         if (font.template) {
             const template = templates[font.template];
@@ -57,7 +61,8 @@ function parseJson(configString: string) {
         fonts.push({
             ...sharedSettings,
             ...templateData,
-            ...font
+            ...font,
+            output: `${name}.ejf`
         });
     }
 
