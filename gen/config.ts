@@ -1,5 +1,6 @@
 import { parse } from "jsr:@std/toml";
 import { basename, extname } from "jsr:@std/path@^1.0.0";
+import GenerationError from "./errors.ts";
 
 export interface Config {
     sharedFontSettings?: EjfConfig;
@@ -29,16 +30,8 @@ export default function parseConfig(path: string): Config {
         throw new Error("Unable to determine the format of the configuration file.");
     }
 
-    const sharedSettings = config.sharedFontSettings || {};
-
-    for (const ejfConfigIndex in config.fonts) {
-        const ejfConfig = config.fonts[ejfConfigIndex];
-        config.fonts[ejfConfigIndex] = {
-            // Apply shared settings.
-            ...sharedSettings,
-            ...ejfConfig,
-            name: basename(ejfConfig.output, extname(ejfConfig.output))
-        };
+    for (const ejfConfig of config.fonts) {
+        ejfConfig.name = basename(ejfConfig.output, extname(ejfConfig.output));
     }
 
     return config;
@@ -46,7 +39,28 @@ export default function parseConfig(path: string): Config {
 
 function parseJson(configString: string) {
     const data = JSON.parse(configString);
-    return data;
+    
+    const fonts: EjfConfig[] = [];
+    const sharedSettings = data.sharedFontSettings || {};
+    const templates: Record<string, object> = data.templates;
+    for (const font of data.fonts) {        
+        let templateData = {};
+        if (font.template) {
+            const template = templates[font.template];
+            if (!template) {
+                throw new GenerationError(`Template ${font.template} not found`, font);
+            }
+            templateData = template;
+        }
+
+        fonts.push({
+            ...sharedSettings,
+            ...templateData,
+            ...font
+        });
+    }
+
+    return { fonts };
 }
 
 function parseToml(configString: string) {    
@@ -72,7 +86,5 @@ function parseToml(configString: string) {
         })
     }
     
-    return {
-        fonts
-    };
+    return { fonts };
 }
