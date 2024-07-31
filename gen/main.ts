@@ -26,7 +26,7 @@ async function main() {
                 current: 0,
                 total: 0
             }
-            progressMap[ejfConfig.output] = progressData;
+            progressMap[ejfConfig.name] = progressData;
             promises.push(buildEjf(ejfConfig, workingDir, progressData));
         }
     } catch (e) {

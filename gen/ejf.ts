@@ -2,10 +2,11 @@ import { BlobWriter, TextReader, Uint8ArrayReader, ZipWriter } from "https://raw
 import parseCharRange from "./char_range.ts";
 import Renderer from "./renderer.ts";
 import buildHeader from "./header.ts";
-import { basename, extname, join, resolve } from "jsr:@std/path@^1.0.0";
+import { join, resolve } from "jsr:@std/path@^1.0.0";
 import GenerationError from "./errors.ts";
 
 export interface EjfConfig {
+    name: string;
     char_range: string;
     ignore_char_range: string;
     input: string;
@@ -58,7 +59,7 @@ async function writeHeader(writer: ZipWriter<Blob>, charRange: number[], rendere
         characters: charRange,
         height: renderer.totalHeight,
         spaceWidth: renderer.spaceWidth,
-        name: basename(config.output, extname(config.output)),
+        name: config.name,
     });
     await writer.add("Header", new TextReader(headerData));
 }
