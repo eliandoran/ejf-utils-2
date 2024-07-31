@@ -2,6 +2,7 @@ import { parse } from "jsr:@std/toml";
 import { basename, extname } from "jsr:@std/path@^1.0.0";
 
 export interface Config {
+    sharedFontSettings?: EjfConfig;
     fonts: EjfConfig[];
 }
 
@@ -28,8 +29,16 @@ export default function parseConfig(path: string): Config {
         throw new Error("Unable to determine the format of the configuration file.");
     }
 
-    for (const ejfConfig of config.fonts) {
-        ejfConfig.name = basename(ejfConfig.output, extname(ejfConfig.output));
+    const sharedSettings = config.sharedFontSettings || {};
+
+    for (const ejfConfigIndex in config.fonts) {
+        const ejfConfig = config.fonts[ejfConfigIndex];
+        config.fonts[ejfConfigIndex] = {
+            // Apply shared settings.
+            ...sharedSettings,
+            ...ejfConfig,
+            name: basename(ejfConfig.output, extname(ejfConfig.output))
+        };
     }
 
     return config;
