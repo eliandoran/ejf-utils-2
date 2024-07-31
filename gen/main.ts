@@ -21,7 +21,7 @@ async function main() {
 
     const promises = [];
     try {
-        for (const ejfConfig of config) {
+        for (const ejfConfig of config.fonts) {
             const progressData: ProgressData = {
                 current: 0,
                 total: 0,

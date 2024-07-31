@@ -4,17 +4,7 @@ import Renderer from "./renderer.ts";
 import buildHeader from "./header.ts";
 import { join, resolve } from "jsr:@std/path@^1.0.0";
 import GenerationError from "./errors.ts";
-
-export interface EjfConfig {
-    name: string;
-    charRange: string;
-    ignoreCharRange: string;
-    input: string;
-    output: string;
-    size: number;
-    skipControlCharacters: boolean;
-    addNullCharacter: boolean;
-}
+import { EjfConfig } from "./config.ts";
 
 export interface ProgressData {
     current: number,

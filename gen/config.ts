@@ -1,20 +1,34 @@
 import { parse } from "jsr:@std/toml";
-import { EjfConfig } from "./ejf.ts";
 import { basename, extname } from "jsr:@std/path@^1.0.0";
 
-export default function parseConfig(path: string): EjfConfig[] {
+export interface Config {
+    fonts: EjfConfig[];
+}
+
+export interface EjfConfig {
+    name: string;
+    charRange: string;
+    ignoreCharRange: string;
+    input: string;
+    output: string;
+    size: number;
+    skipControlCharacters: boolean;
+    addNullCharacter: boolean;
+}
+
+export default function parseConfig(path: string): Config {
     const configString = Deno.readTextFileSync(path);
-    let config;
+    let config: Config;
     
     if (extname(path) === ".toml") {
-        config = parseToml(configString) as EjfConfig[];    
+        config = parseToml(configString);
     } else if (extname(path) === ".json") {
         config = parseJson(configString);
     } else {
         throw new Error("Unable to determine the format of the configuration file.");
     }
 
-    for (const ejfConfig of config) {
+    for (const ejfConfig of config.fonts) {
         ejfConfig.name = basename(ejfConfig.output, extname(ejfConfig.output));
     }
 
@@ -23,19 +37,22 @@ export default function parseConfig(path: string): EjfConfig[] {
 
 function parseJson(configString: string) {
     const data = JSON.parse(configString);
-    return data.fonts;
+    return data;
 }
 
 function parseToml(configString: string) {    
     const tomlData = parse(configString);
-    const config: Omit<EjfConfig, "name">[] = [];
+    const fonts: EjfConfig[] = [];
 
     if (!("font" in tomlData) || !Array.isArray(tomlData.font)) {
         throw new Error("Unable to parse TOML config because it's missing [[font]].")
     }
 
     for (const readConfig of tomlData.font) {
-        config.push({
+        fonts.push({
+            // Calculated afterwards.
+            name: "",
+
             charRange: readConfig.char_range,
             ignoreCharRange: readConfig.ignore_char_range,
             input: readConfig.input,
@@ -46,5 +63,7 @@ function parseToml(configString: string) {
         })
     }
     
-    return config;
+    return {
+        fonts
+    };
 }
