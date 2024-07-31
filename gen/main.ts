@@ -49,7 +49,7 @@ async function main() {
         if (renderData.length) {
             await progress.render(renderData);
         }
-    }, 100);
+    }, 250);
 
     await Promise.all(promises);
 
