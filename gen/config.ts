@@ -13,6 +13,7 @@ export interface EjfConfig {
     ignoreCharRange: string;
     input: string;
     output: string;
+    outputDir?: string;
     size: number;
     skipControlCharacters: boolean;
     addNullCharacter: boolean;

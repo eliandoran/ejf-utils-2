@@ -46,7 +46,7 @@ export default async function buildEjf(config: EjfConfig, workingDir: string, pr
     await writer.close();
     
     const data = await blobWriter.getData();
-    const outputPath = join(workingDir, config.output);
+    const outputPath = join(workingDir, config.outputDir || "", config.output);
     Deno.writeFileSync(outputPath, new Uint8Array(await data.arrayBuffer()), {});
 }
 
