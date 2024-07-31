@@ -1,5 +1,5 @@
-import { EjfConfig } from "./ejf.ts";
 import unicode from "https://deno.land/x/unicode/mod.ts";
+import { EjfConfig } from "./config.ts";
 
 export default function parseCharRange(config: EjfConfig) {        
     const charRange = getRawRange(config.charRange);
@@ -33,6 +33,10 @@ export default function parseCharRange(config: EjfConfig) {
 }
 
 function getRawRange(charRange: string) {
+    if (!charRange) {
+        return [];
+    }
+
     const components = charRange
         .replace(/;/g, ",")
         .replace(/\s*/g, "")
