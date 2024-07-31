@@ -21,8 +21,8 @@ export default class Renderer {
 
         const properties = this.face.properties();
         const yScale = properties.size.yScale / 65536;
-        this.ascender = Math.floor(properties.ascender * yScale) / 64;
-        const descender = -Math.floor(properties.descender * yScale) / 64;    
+        this.ascender = Math.floor(Math.floor(properties.ascender * yScale) / 64);
+        const descender = Math.floor(-Math.floor(properties.descender * yScale) / 64);
         this.totalHeight = Math.floor(this.ascender + descender);
         this.spaceWidth = this.getMetrics(this.getGlyph(32)).widthWithSpacing;
     }
