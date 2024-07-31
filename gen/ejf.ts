@@ -13,15 +13,11 @@ export interface ProgressData {
     height: number
 }
 
-export default async function buildEjf(config: EjfConfig, workingDir: string, progressData: ProgressData) {
-    const charRange = parseCharRange(config);    
-    if (!charRange.length) {
-        throw new GenerationError(`The font ${config.name} has no characters.`);
-    }
+export default async function buildEjf(fullConfig: EjfConfig | EjfConfig[], workingDir: string, progressData: ProgressData) {    
 
-    const ttfPath = resolve(workingDir, config.input);
-    const renderer = new Renderer(ttfPath, config.size);
-    progressData.height = renderer.totalHeight;
+    const { height, fullCharRange, configs } = buildIndividualConfiguration(fullConfig, workingDir);
+    progressData.height = height;
+    progressData.total = fullCharRange.length;
     
     const blobWriter = new BlobWriter("application/zip");
     const date = new Date(315522000000);
@@ -38,16 +34,62 @@ export default async function buildEjf(config: EjfConfig, workingDir: string, pr
     });
 
     // Render each character.
-    await writeCharacters(writer, charRange, renderer, progressData);
+    for (const { charRange, renderer } of configs) {
+        await writeCharacters(writer, charRange, renderer, progressData);
+    }
 
     // Write the header
-    await writeHeader(writer, charRange, renderer, config);
+    const mainConfig = configs[0];
+    await writeHeader(writer, fullCharRange, mainConfig.renderer, mainConfig.ejfConfig);
 
     await writer.close();
     
     const data = await blobWriter.getData();
-    const outputPath = join(workingDir, config.outputDir || "", config.output);
+    const outputPath = join(workingDir, mainConfig.ejfConfig.outputDir || "", mainConfig.ejfConfig.output);
     Deno.writeFileSync(outputPath, new Uint8Array(await data.arrayBuffer()), {});
+}
+
+function buildIndividualConfiguration(fullConfig: EjfConfig | EjfConfig[], workingDir: string) {
+    const configs = (Array.isArray(fullConfig) ? fullConfig : [ fullConfig ]);
+    const output = [];
+    let minHeight = Number.MAX_SAFE_INTEGER;
+    let maxHeight = Number.MIN_SAFE_INTEGER;
+
+    for (const config of configs) {
+        if (!config.input) {
+            throw new GenerationError("Missing path to input file.", config);
+        }
+
+        const ttfPath = resolve(workingDir, config.input);
+        const renderer = new Renderer(ttfPath, config.size);
+        const height = renderer.totalHeight;
+        const charRange = parseCharRange(config);
+
+        if (!charRange.length) {
+            throw new GenerationError(`The font ${configs[0].name} has no characters.`);
+        }
+
+        minHeight = Math.min(minHeight, height);
+        maxHeight = Math.max(maxHeight, height);
+
+        output.push({
+            renderer,
+            charRange,
+            height,
+            ejfConfig: config
+        });
+    }
+
+    if (minHeight !== maxHeight) {
+        throw new GenerationError(`Composite font with name "${configs[0].name}" has configurations with different font heights (${minHeight} vs ${maxHeight}). This is not supported, all sub-configurations must render to the same height.`);
+    }
+
+    return {
+        configs: output,
+        height: maxHeight,
+        /** The combined char range of all the individual configurations. */
+        fullCharRange: output.map((config) => config.charRange).flat()
+    };
 }
 
 async function writeHeader(writer: ZipWriter<Blob>, charRange: number[], renderer: Renderer, config: EjfConfig) {
@@ -61,8 +103,7 @@ async function writeHeader(writer: ZipWriter<Blob>, charRange: number[], rendere
     await writer.add("Header", new TextReader(headerData));
 }
 
-async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], renderer: Renderer, progressData: ProgressData) {
-    progressData.total = charRange.length;
+async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], renderer: Renderer, progressData: ProgressData) {    
     for (const char of charRange) {        
         const charFileName = `0x${char.toString(16)}`;
         const renderedChar = renderer.render(char);

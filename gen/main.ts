@@ -39,7 +39,8 @@ async function main() {
                 total: 0,
                 height: 0
             }
-            progressMap[ejfConfig.name] = progressData;
+            const name = Array.isArray(ejfConfig) ? ejfConfig[0].name : ejfConfig.name;
+            progressMap[name] = progressData;
             promises.push(buildEjf(ejfConfig, workingDir, progressData));
         }
 

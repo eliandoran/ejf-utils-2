@@ -3,8 +3,7 @@ import { basename, extname } from "jsr:@std/path@^1.0.0";
 import GenerationError from "./errors.ts";
 
 export interface Config {
-    sharedFontSettings?: EjfConfig;
-    fonts: EjfConfig[];
+    fonts: (EjfConfig | EjfConfig[])[];
 }
 
 export interface EjfConfig {
@@ -36,34 +35,42 @@ export default function parseConfig(path: string): Config {
     }
 
     for (const ejfConfig of config.fonts) {
-        ejfConfig.name = basename(ejfConfig.output, extname(ejfConfig.output));
+        const subConfig = Array.isArray(ejfConfig) ? ejfConfig[0] : ejfConfig;
+        subConfig.name = basename(subConfig.output, extname(subConfig.output));
     }
 
     return config;
 }
 
-function parseJson(configString: string) {
+function parseJson(configString: string): Config {
     const data = JSON.parse(configString);
     
-    const fonts: EjfConfig[] = [];
+    const fonts: (EjfConfig | EjfConfig[])[] = [];
     const sharedSettings = data.sharedFontSettings || {};
     const templates: Record<string, object> = data.templates;
-    for (const [ name, font ] of Object.entries(data.fonts as Record<string, JsonEjfConfig>)) {
+    for (const [ name, font ] of Object.entries(data.fonts as Record<string, JsonEjfConfig | JsonEjfConfig[]>)) {
+        const subConfigs = Array.isArray(font) ? font : [ font ];
+        const processedSubConfigs: JsonEjfConfig[] = [];
+
         let templateData = {};
-        if (font.template) {
-            const template = templates[font.template];
-            if (!template) {
-                throw new GenerationError(`Template ${font.template} not found`, font);
+        for (const subConfig of subConfigs) {
+            if (subConfig.template) {
+                const template = templates[subConfig.template];
+                if (!template) {
+                    throw new GenerationError(`Template ${subConfig.template} not found`, font);
+                }
+                templateData = template;
             }
-            templateData = template;
+
+            processedSubConfigs.push({
+                ...sharedSettings,
+                ...templateData,
+                ...subConfig,
+                output: `${name}.ejf`
+            });
         }
 
-        fonts.push({
-            ...sharedSettings,
-            ...templateData,
-            ...font,
-            output: `${name}.ejf`
-        });
+        fonts.push(processedSubConfigs);
     }
 
     return { fonts };
