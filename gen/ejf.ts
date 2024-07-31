@@ -7,13 +7,13 @@ import GenerationError from "./errors.ts";
 
 export interface EjfConfig {
     name: string;
-    char_range: string;
-    ignore_char_range: string;
+    charRange: string;
+    ignoreCharRange: string;
     input: string;
     output: string;
     size: number;
-    skip_control_characters: boolean;
-    add_null_character: boolean;
+    skipControlCharacters: boolean;
+    addNullCharacter: boolean;
 }
 
 export interface ProgressData {

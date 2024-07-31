@@ -2,8 +2,8 @@ import { EjfConfig } from "./ejf.ts";
 import unicode from "https://deno.land/x/unicode/mod.ts";
 
 export default function parseCharRange(config: EjfConfig) {        
-    const charRange = getRawRange(config.char_range);
-    const ignoreCharRange = getRawRange(config.ignore_char_range);
+    const charRange = getRawRange(config.charRange);
+    const ignoreCharRange = getRawRange(config.ignoreCharRange);
 
     const filtered = charRange.filter((ch) => {
         if (ch === 0x20) {
@@ -13,7 +13,7 @@ export default function parseCharRange(config: EjfConfig) {
         }
 
         // Ignore control characters.
-        if (config?.skip_control_characters && unicode[ ch]?.category === "Cc") {
+        if (config?.skipControlCharacters && unicode[ ch]?.category === "Cc") {
             return false;
         }
 
@@ -21,7 +21,7 @@ export default function parseCharRange(config: EjfConfig) {
     });
 
     let charSet = new Set(filtered);
-    if (config?.add_null_character) {
+    if (config?.addNullCharacter) {
         charSet.add(0);
     }
 
