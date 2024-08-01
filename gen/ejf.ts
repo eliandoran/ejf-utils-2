@@ -34,8 +34,10 @@ export default async function buildEjf(fullConfig: EjfConfig | EjfConfig[], work
     });
 
     // Render each character.
+    let isFirstConfig = true;
     for (const { charRange, renderer } of configs) {
-        await writeCharacters(writer, charRange, renderer, progressData);
+        await writeCharacters(writer, charRange, renderer, progressData, isFirstConfig);
+        isFirstConfig = false;
     }
 
     // Write the header
@@ -103,8 +105,13 @@ async function writeHeader(writer: ZipWriter<Blob>, charRange: number[], rendere
     await writer.add("Header", new TextReader(headerData));
 }
 
-async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], renderer: Renderer, progressData: ProgressData) {    
+async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], renderer: Renderer, progressData: ProgressData, isFirstConfig: boolean) {    
     for (const char of charRange) {        
+        if (char === 0 && isFirstConfig) {
+            // The NULL character needs to be embedded only once in composite fonts.
+            continue;
+        }
+
         const charFileName = `0x${char.toString(16)}`;
         const renderedChar = renderer.render(char);
         
