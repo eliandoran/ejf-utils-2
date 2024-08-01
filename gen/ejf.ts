@@ -107,7 +107,7 @@ async function writeHeader(writer: ZipWriter<Blob>, charRange: number[], rendere
 
 async function writeCharacters(writer: ZipWriter<Blob>, charRange: number[], renderer: Renderer, progressData: ProgressData, isFirstConfig: boolean) {    
     for (const char of charRange) {        
-        if (char === 0 && isFirstConfig) {
+        if (char === 0 && !isFirstConfig) {
             // The NULL character needs to be embedded only once in composite fonts.
             continue;
         }
