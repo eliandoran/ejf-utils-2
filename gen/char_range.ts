@@ -20,9 +20,13 @@ export default function parseCharRange(config: EjfConfig) {
         return true;
     });
 
-    let charSet = new Set(filtered);
+    let charSet = new Set<number>(filtered);
     if (config?.addNullCharacter) {
         charSet.add(0);
+    }
+
+    if (config.ensureString) {
+        charSet = charSet.union(getRangeFromEnsureString(config.ensureString));
     }
 
     // Remove all the ignored characters.
@@ -30,6 +34,12 @@ export default function parseCharRange(config: EjfConfig) {
 
     // Remove duplicate characters.
     return Array.from(charSet).toSorted((a, b) => a-b);
+}
+
+function getRangeFromEnsureString(string: string) {
+    return new Set(string
+        .split("")
+        .map((ch) => ch.charCodeAt(0)));
 }
 
 function getRawRange(charRange: string) {
@@ -42,7 +52,7 @@ function getRawRange(charRange: string) {
         .replace(/\s*/g, "")
         .split(",");
 
-    const result = [];
+    const result: number[] = [];
     for (const component of components) {
         const rangeComponents = component.split("-");
         if (rangeComponents.length > 2) {

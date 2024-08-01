@@ -9,6 +9,7 @@ export interface Config {
 export interface EjfConfig {
     name: string;
     charRange: string;
+    ensureString?: string;
     ignoreCharRange: string;
     input: string;
     output: string;
