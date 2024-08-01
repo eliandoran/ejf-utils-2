@@ -52,8 +52,8 @@ function parseJson(configString: string): Config {
         const subConfigs = Array.isArray(font) ? font : [ font ];
         const processedSubConfigs: JsonEjfConfig[] = [];
 
-        let templateData = {};
         for (const subConfig of subConfigs) {
+            let templateData = {};
             if (subConfig.template) {
                 const template = templates[subConfig.template];
                 if (!template) {

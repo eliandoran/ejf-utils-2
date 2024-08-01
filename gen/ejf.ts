@@ -90,7 +90,7 @@ function buildIndividualConfiguration(fullConfig: EjfConfig | EjfConfig[], worki
         configs: output,
         height: maxHeight,
         /** The combined char range of all the individual configurations. */
-        fullCharRange: output.map((config) => config.charRange).flat()
+        fullCharRange: Array.from(new Set(output.map((config) => config.charRange).flat()))
     };
 }
 
