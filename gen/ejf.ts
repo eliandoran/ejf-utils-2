@@ -54,7 +54,6 @@ export default async function buildEjf(fullConfig: EjfConfig | EjfConfig[], work
 function buildIndividualConfiguration(fullConfig: EjfConfig | EjfConfig[], workingDir: string) {
     const configs = (Array.isArray(fullConfig) ? fullConfig : [ fullConfig ]);
     const output = [];
-    let minHeight = Number.MAX_SAFE_INTEGER;
     let maxHeight = Number.MIN_SAFE_INTEGER;
 
     for (const config of configs) {
@@ -71,7 +70,6 @@ function buildIndividualConfiguration(fullConfig: EjfConfig | EjfConfig[], worki
             throw new GenerationError(`The font ${configs[0].name} has no characters.`);
         }
 
-        minHeight = Math.min(minHeight, height);
         maxHeight = Math.max(maxHeight, height);
 
         output.push({
@@ -82,8 +80,8 @@ function buildIndividualConfiguration(fullConfig: EjfConfig | EjfConfig[], worki
         });
     }
 
-    if (minHeight !== maxHeight) {
-        throw new GenerationError(`Composite font with name "${configs[0].name}" has configurations with different font heights (${minHeight} vs ${maxHeight}). This is not supported, all sub-configurations must render to the same height.`);
+    if (output[0].height !== maxHeight) {
+        throw new GenerationError(`Composite font with name "${configs[0].name}" has a sub-configuration with a height of ${maxHeight} which is higher than its first configuration (${output[0].height}).`);
     }
 
     return {

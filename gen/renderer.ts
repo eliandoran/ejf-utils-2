@@ -13,7 +13,7 @@ export default class Renderer {
     totalHeight: number;
     spaceWidth: number;
 
-    constructor(ttfPath: string, size: number) {
+    constructor(ttfPath: string, size: number, minHeight?: number) {
         const face = this.getFont(ttfPath);
         const charWidth = size;
         face.setCharSize(charWidth, 0, DPI, 0);
@@ -23,7 +23,7 @@ export default class Renderer {
         const yScale = properties.size.yScale / 65536;
         this.ascender = Math.floor(Math.floor(properties.ascender * yScale) / 64);
         const descender = Math.floor(-Math.floor(properties.descender * yScale) / 64);
-        this.totalHeight = Math.floor(this.ascender + descender);
+        this.totalHeight = Math.max(Math.floor(this.ascender + descender), minHeight || 0);
         this.spaceWidth = this.getMetrics(this.getGlyph(32)).widthWithSpacing;
     }
 
