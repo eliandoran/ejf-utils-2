@@ -7,17 +7,19 @@ import GenerationError from "./errors.ts";
 import { EjfConfig } from "./config.ts";
 
 export interface ProgressData {
-    current: number,
-    total: number,
+    current: number;
+    total: number;
     /** The height of the generated font, in pixels. */
-    height: number
+    height: number;
+    numIgnoredChars: number;
 }
 
 export default async function buildEjf(fullConfig: EjfConfig | EjfConfig[], workingDir: string, progressData: ProgressData) {    
 
-    const { height, fullCharRange, configs } = buildIndividualConfiguration(fullConfig, workingDir);
+    const { height, fullCharRange, configs, numIgnoredChars } = buildIndividualConfiguration(fullConfig, workingDir);
     progressData.height = height;
     progressData.total = fullCharRange.length;
+    progressData.numIgnoredChars = numIgnoredChars;
     
     const blobWriter = new BlobWriter("application/zip");
     const date = new Date(315522000000);
@@ -55,6 +57,7 @@ function buildIndividualConfiguration(fullConfig: EjfConfig | EjfConfig[], worki
     const configs = (Array.isArray(fullConfig) ? fullConfig : [ fullConfig ]);
     const output = [];
     let maxHeight = Number.MIN_SAFE_INTEGER;
+    let numIgnoredChars = 0;
 
     for (const config of configs) {
         if (!config.input) {
@@ -64,7 +67,14 @@ function buildIndividualConfiguration(fullConfig: EjfConfig | EjfConfig[], worki
         const ttfPath = resolve(workingDir, config.input);
         const renderer = new Renderer(ttfPath, config.size);
         const height = renderer.totalHeight;
-        const charRange = parseCharRange(config);
+        const unfilteredCharacterRange = parseCharRange(config);
+        let charRange;
+        if (config.skipUnsupportedCharacters) {
+            charRange = unfilteredCharacterRange.filter((ch) => renderer.shouldRender(ch));
+        } else {
+            charRange = unfilteredCharacterRange;
+        }
+        numIgnoredChars += (unfilteredCharacterRange.length - charRange.length);
 
         if (!charRange.length) {
             throw new GenerationError(`The font ${configs[0].name} has no characters.`);
@@ -88,7 +98,8 @@ function buildIndividualConfiguration(fullConfig: EjfConfig | EjfConfig[], worki
         configs: output,
         height: maxHeight,
         /** The combined char range of all the individual configurations. */
-        fullCharRange: Array.from(new Set(output.map((config) => config.charRange).flat()))
+        fullCharRange: Array.from(new Set(output.map((config) => config.charRange).flat())),
+        numIgnoredChars
     };
 }
 

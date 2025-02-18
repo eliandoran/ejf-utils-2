@@ -16,6 +16,7 @@ export interface EjfConfig {
     outputDir?: string;
     size: number;
     skipControlCharacters: boolean;
+    skipUnsupportedCharacters: boolean;
     addNullCharacter: boolean;
 }
 

@@ -74,6 +74,14 @@ export default class Renderer {
         }); 
     }
 
+    shouldRender(charCode: number) {
+        if (charCode !== 0 && this.face.getCharIndex(charCode) === null) {
+            return false;
+        }
+
+        return true;
+    }
+
     private getMetrics(glyph: Glyph) {
         // Some characters can have negative spacing, which is not supported by the MicroEJ engine so we ignore it.
         const leftSpacing = Math.max(0, glyph.metrics.horiBearingX / 64);

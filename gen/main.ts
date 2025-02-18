@@ -21,7 +21,7 @@ async function main() {
     const updateInterval = setInterval(async () => {
         const renderData = Object.entries(progressMap).map(([name, data]) => {
             return {
-                text: `${name}, height: ${data.height}px`,
+                text: `${name}, height: ${data.height}px, ignored: ${data.numIgnoredChars}`,
                 completed: data.current,
                 total: data.total
             };
