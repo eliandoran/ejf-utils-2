@@ -37,7 +37,8 @@ async function main() {
             const progressData: ProgressData = {
                 current: 0,
                 total: 0,
-                height: 0
+                height: 0,
+                numIgnoredChars: 0
             }
             const name = Array.isArray(ejfConfig) ? ejfConfig[0].name : ejfConfig.name;
             progressMap[name] = progressData;
