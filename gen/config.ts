@@ -97,6 +97,7 @@ function parseToml(configString: string) {
             output: readConfig.output,
             size: readConfig.size,
             skipControlCharacters: readConfig.skip_control_characters,
+            skipUnsupportedCharacters: readConfig.skip_unsupported_characters,
             addNullCharacter: readConfig.add_null_character
         })
     }
