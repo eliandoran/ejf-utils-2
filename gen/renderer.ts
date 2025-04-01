@@ -29,7 +29,12 @@ export default class Renderer {
 
     render(charCode: number) {
         const glyph = this.getGlyph(charCode);
-        const { leftSpacing, glyphWidth, glyphHeight, widthWithSpacing } = this.getMetrics(glyph);
+        let { leftSpacing, glyphWidth, glyphHeight, widthWithSpacing } = this.getMetrics(glyph);
+		
+		 // The NULL character does not have a width and it does not need left and right spacing (we apply a minimum width of 1).
+		if (charCode === 0){
+			widthWithSpacing = 1;
+		}
         const numPixels = (widthWithSpacing * this.totalHeight * 4);
     
         if (!glyph.bitmap && STRICT) {
@@ -52,7 +57,7 @@ export default class Renderer {
                 }
             }
         }
-
+		
         return encode(outputBuffer, widthWithSpacing, this.totalHeight);
     }
 
