@@ -21,9 +21,9 @@ export default class Renderer {
 
         const properties = this.face.properties();
         const yScale = properties.size.yScale / 65536;
-        this.ascender = Math.floor(Math.floor(properties.ascender * yScale) / 64);
-        const descender = Math.floor(-Math.floor(properties.descender * yScale) / 64);
-        this.totalHeight = Math.max(Math.floor(this.ascender + descender), minHeight || 0);
+        this.ascender = Math.ceil(Math.ceil(properties.ascender * yScale) / 64);
+        const descender = Math.ceil(-Math.ceil(properties.descender * yScale) / 64);
+        this.totalHeight = Math.max(Math.ceil(this.ascender + descender), minHeight || 0);
         this.spaceWidth = this.getMetrics(this.getGlyph(32)).widthWithSpacing;
     }
 
@@ -44,7 +44,7 @@ export default class Renderer {
         const outputBuffer = new Uint8Array(numPixels).fill(255);
         
         if (glyph.bitmap) {
-            const yOffset = Math.floor(this.ascender - (glyph.bitmapTop || 0));
+            const yOffset = Math.ceil(this.ascender - glyph.bitmapTop);
             const inputBuffer = Uint8Array.from(glyph.bitmap.buffer);
             for (let y = 0; y < glyphHeight; y++) {
                 for (let x = 0; x < glyphWidth; x++) {
